@@ -1,0 +1,22 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(node -e \"const l = require\\(''/home/surmavanick/Desktop/Tmed/node_modules/lucide-react''\\); console.log\\(''Plane:'', !!l.Plane, ''CircleDot:'', !!l.CircleDot, ''PlaneTakeoff:'', !!l.PlaneTakeoff, ''Dot:'', !!l.Dot\\)\")",
+      "Bash(grep -r \"patient\\\\|Patient\" /home/surmavanick/Desktop/Tmed/src/pages --include=*.tsx -l)",
+      "Bash(npx tsc:*)",
+      "Bash(npm install:*)",
+      "Bash(curl -s http://localhost:8080)",
+      "Bash(curl -so /dev/null -w \"%{http_code}\" http://localhost:8080)",
+      "Bash(lsof -ti:8080,8081)",
+      "Bash(xargs kill:*)",
+      "Bash(find /home/surmavanick/Desktop/Tmed -type f \\\\\\(-name *.ts -o -name *.js \\\\\\) -path */server* -o -name *api* -o -name *backend*)",
+      "Bash(git init:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git branch:*)",
+      "Bash(git remote:*)",
+      "Bash(git config:*)",
+      "Bash(git push:*)"
+    ]
+  }
+}
