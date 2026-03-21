@@ -16,6 +16,7 @@ import emailjs from "@emailjs/browser";
 import { EMAILJS_CONFIG, isEmailJSConfigured } from "@/lib/emailjs";
 import { useBookings } from "@/store/bookingStore";
 import { useAuth } from "@/store/authStore";
+import { supabase } from "@/lib/supabase";
 
 export default function BookPage() {
   const [params] = useSearchParams();
@@ -53,22 +54,28 @@ export default function BookPage() {
     fileInputRef.current?.click();
   };
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file || !uploadingDoc) return;
-    const url = URL.createObjectURL(file);
+    e.target.value = "";
+
+    const filePath = `${Date.now()}_${file.name.replace(/\s+/g, "_")}`;
+    const { error } = await supabase.storage.from("documents").upload(filePath, file);
+    if (error) {
+      toast.error("Upload failed: " + error.message);
+      setUploadingDoc(null);
+      return;
+    }
+    const { data } = supabase.storage.from("documents").getPublicUrl(filePath);
     setFiles((prev) => {
       const filtered = prev.filter((f) => f.type !== uploadingDoc);
-      return [...filtered, { name: file.name, type: uploadingDoc, url }];
+      return [...filtered, { name: file.name, type: uploadingDoc, url: data.publicUrl }];
     });
     toast.success(`${uploadingDoc} uploaded successfully`);
     setUploadingDoc(null);
-    e.target.value = "";
   };
 
   const removeFile = (index: number) => {
-    const file = files[index];
-    if (file?.url) URL.revokeObjectURL(file.url);
     setFiles((prev) => prev.filter((_, i) => i !== index));
   };
 
