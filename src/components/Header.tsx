@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import logo from "/logo.svg";
+import logo from "@/assets/logo.svg";
 import { useAuth } from "@/store/authStore";
 import type { UserRole } from "@/store/authStore";
 import { useIsMobile } from "@/hooks/use-mobile";
