@@ -403,7 +403,7 @@ export const hospitals: Hospital[] = [
       { question: "Is the clinic accessible for patients with limited mobility?", answer: "The clinic is fully wheelchair accessible with dedicated elevators, ramps, and patient transport services available on request." },
     ],
     contactEmail: "info@toduaclinic.ge",
-    image: "https://images.unsplash.com/photo-1538108149393-cebb47ac17e1?auto=format&fit=crop&w=800&q=80",
+    image: "https://toduaclinic.ge/storage/photos/3/64e86adea8b2e.jpg",
     reviews: [
       { name: "David L.", country: "Israel", flag: "🇮🇱", rating: 5, text: "My father came here after being told by three hospitals in Israel that his cancer was inoperable. The oncology team at Todua re-evaluated his case and performed a targeted radiosurgery. Six months later his tumour has shrunk significantly. The level of care is world-class." },
       { name: "Elena R.", country: "Russia", flag: "🇷🇺", rating: 5, text: "PET/CT scanning done same day, results explained thoroughly by a specialist. No waiting, no bureaucracy. In Moscow this would have taken weeks. The radiologists here are outstanding professionals." },
@@ -431,7 +431,7 @@ export const hospitals: Hospital[] = [
       { question: "Do you provide airport transfers for international patients?", answer: "Yes. We offer a complimentary airport pickup service for international patients admitted for surgery or extended inpatient treatment." },
     ],
     contactEmail: "info@newhospitals.ge",
-    image: "https://images.unsplash.com/photo-1551076805-e1869043e560?auto=format&fit=crop&w=800&q=80",
+    image: "https://www.newhospitals.ge/res/upload/news/b5a94534ded6822912fe7953ea6be130.png",
     reviews: [
       { name: "Thomas B.", country: "Germany", flag: "🇩🇪", rating: 5, text: "My son needed urgent paediatric surgery and we were desperate. New Hospitals accepted us within 48 hours, the paediatric surgeon was exceptional. The nurses took care of my son around the clock and communicated in English throughout. We are very grateful." },
       { name: "Yuki T.", country: "Japan", flag: "🇯🇵", rating: 4, text: "Had cataract surgery on both eyes. The ophthalmology department uses the latest phacoemulsification technology. Very impressed with the precision and the aftercare instructions were thorough. Vision is now 100%." },
@@ -459,7 +459,7 @@ export const hospitals: Hospital[] = [
       { question: "Is interpretation available for non-Georgian patients?", answer: "Yes. English and Russian interpretation is available throughout the consultation and treatment process. Other language interpreters can be arranged with advance notice." },
     ],
     contactEmail: "info@khechinashvili.ge",
-    image: "https://images.unsplash.com/photo-1516549655169-df83a0774514?auto=format&fit=crop&w=800&q=80",
+    image: "https://newshub.ge/uploads/files/2020/06/24/5958/khechinashvilis-klinika_w_h.jpeg",
     reviews: [
       { name: "Artem P.", country: "Ukraine", flag: "🇺🇦", rating: 5, text: "Had knee ligament reconstruction surgery here after a sports injury. The traumatology team was top-notch. The surgeon showed me exactly what he planned to do using 3D imaging before the operation. Recovery with the physio team was faster than expected." },
       { name: "Caroline W.", country: "France", flag: "🇫🇷", rating: 4, text: "ENT specialist diagnosed my chronic sinusitis within one appointment and scheduled surgery for the following week. The procedure was minimally invasive and I returned to normal life in five days. Very reasonable cost compared to France." },
@@ -487,7 +487,7 @@ export const hospitals: Hospital[] = [
       { question: "Is accommodation assistance available for international patients?", answer: "Yes. We partner with nearby apartments and hotel services to provide affordable accommodation for patients and their families during treatment, coordinated through our patient services office." },
     ],
     contactEmail: "info@mardaleishvili.ge",
-    image: "https://images.unsplash.com/photo-1586773860418-d37222d8fce3?auto=format&fit=crop&w=800&q=80",
+    image: "https://www.autism-mmc.com/wp-content/uploads/2019/05/15665504_1265361300186928_8764551076933791309_n.jpg",
     reviews: [
       { name: "Miriam G.", country: "Germany", flag: "🇩🇪", rating: 5, text: "My husband was diagnosed with thyroid cancer. We chose Mardaleishvili after extensive research and it was the right decision. The head and neck surgeon is one of the best I have encountered anywhere in Europe. The laser surgery left almost no scar and recovery was smooth." },
       { name: "Timur A.", country: "Kazakhstan", flag: "🇰🇿", rating: 5, text: "Came for cellular therapy as a last resort after conventional treatment failed. The team was honest, explained the procedure risks clearly, and the results three months later have been genuinely remarkable. Staff feel like family." },
@@ -523,7 +523,7 @@ export const hospitals: Hospital[] = [
     accreditations: ["ISO 9001"],
     description: "Innova Medical Center is distinguished by its team of true professionals and the newest European and US standards for diagnostics and treatment.",
     contactEmail: "info@innovamed.ge",
-    image: "https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?auto=format&fit=crop&w=800&q=80",
+    image: "https://cdn.worldclinics.net/clinic/large/jpg/innova-medical-center-1.jpg",
   },
   {
     id: "h9", name: "Chapidze Emergency Cardiology Center",
@@ -532,7 +532,7 @@ export const hospitals: Hospital[] = [
     accreditations: ["JCI Accredited", "German EuroCert"],
     description: "A premier facility strictly focused on cardiovascular health, offering urgent and planned cardiological surgeries, minimally invasive procedures, and a high-tech ICU.",
     contactEmail: "info@chapidzereferal.ge",
-    image: "https://images.unsplash.com/photo-1538108149393-cebb47ac17e1?auto=format&fit=crop&w=800&q=80",
+    image: "https://scontent.ftbs6-2.fna.fbcdn.net/v/t39.30808-6/476612834_1170526121191944_6337369350644129346_n.jpg?_nc_cat=109&ccb=1-7&_nc_sid=2a1932&_nc_ohc=HJ_Hvs0UaKwQ7kNvwHDxIVj&_nc_oc=Adoz8lBEIYYQodkUVEhOKZkbnWxwS1DAJ0r944eKjqvzBibX0es1ZJR-vBrISjSUNxE&_nc_zt=23&_nc_ht=scontent.ftbs6-2.fna&_nc_gid=t16PyjPcuTuO8eNrpk-E0Q&_nc_ss=7a32e&oh=00_Afx9dG-OlJMYJr8P1VijNTNqrb09ZozIXVEGvw73ql21Ng&oe=69C4E532",
   },
   {
     id: "h10", name: "MediClub Georgia",
@@ -541,7 +541,7 @@ export const hospitals: Hospital[] = [
     accreditations: ["ISO 9001", "TEMOS Certified"],
     description: "Internationally focused private clinic popular with expat patients, offering modern inpatient and outpatient care across multiple specialties.",
     contactEmail: "info@mediclub.ge",
-    image: "https://images.unsplash.com/photo-1572297870735-065d402f7b29?auto=format&fit=crop&w=800&q=80",
+    image: "https://www.mediclub.az/storage/uploads/rich_text/vMbOEcCIwpC6T5TB1644305598_1920x1080.jpg",
   },
   {
     id: "h11", name: "Aversi Clinic",
@@ -577,7 +577,7 @@ export const hospitals: Hospital[] = [
     accreditations: ["European IVF Standards"],
     description: "A leading specialized medical center for reproductive medicine and genetics. Famous for advanced fertility treatments and in vitro fertilization success rates.",
     contactEmail: "info@zhordaniaclinic.ge",
-    image: "https://images.unsplash.com/photo-1551076805-e1869043e560?auto=format&fit=crop&w=800&q=80",
+    image: "https://framerusercontent.com/images/5bFd8W0eZD553luTXd4LxS7nR8.webp?width=2560&height=1706",
   },
   {
     id: "h15", name: "Curatio Clinic",
@@ -613,7 +613,7 @@ export const hospitals: Hospital[] = [
     accreditations: ["ISO 9001"],
     description: "Strategically located multiprofile hospital supplying superior diagnostic scans and high-tech surgeries via expert physicians.",
     contactEmail: "info@tch.ge",
-    image: "https://images.unsplash.com/photo-1586773860418-d37222d8fce3?auto=format&fit=crop&w=800&q=80",
+    image: "https://vian.health/static/media/202403265139-iashvili-1920-axali.webp",
   },
   {
     id: "h19", name: "Javrishvili Clinic (Ophthalmij)",
@@ -622,7 +622,7 @@ export const hospitals: Hospital[] = [
     accreditations: ["Specialized ISO"],
     description: "Advanced ophthalmic care featuring laser vision correction, cataract surgery, and treatments for complex retinal diseases.",
     contactEmail: "info@ophthalmij.ge",
-    image: "https://images.unsplash.com/photo-1551076805-e1869043e560?auto=format&fit=crop&w=800&q=80",
+    image: "https://scontent.ftbs4-2.fna.fbcdn.net/v/t1.6435-9/57935945_2328186443868576_8712393648731324416_n.jpg?_nc_cat=111&ccb=1-7&_nc_sid=13d280&_nc_ohc=GdlBD7uejy0Q7kNvwF-YW8w&_nc_oc=AdqmzI9nL5d9RvOXRFP3hbDVa0S1G-x0-mQUWRTdd9V0HbvIFRC88TdLODRVxY3tPXY&_nc_zt=23&_nc_ht=scontent.ftbs4-2.fna&_nc_gid=HaG40jjocUcpNzneKvKTtw&_nc_ss=7a32e&oh=00_AfxsXakHittkRQRmQ_hEs-wRWWtgoZRGZhF5KhO8Uqidqg&oe=69E66F63",
   },
   {
     id: "h20", name: "Gia Gvaramia Clinic",
@@ -646,13 +646,11 @@ export const mockDoctors: Doctor[] = [
   { id: "d8", name: "Dr. Ana Chkhartishvili",  hospitalId: "h2", specialty: "Oncology",         avatar: "https://i.pravatar.cc/150?u=d8", meetLink: "https://meet.google.com/ach-onco-h2z" },
 ];
 
-export const mockBookings: BookingRequest[] = [];
-
-// REMOVED mock bookings — kept for reference only
-const _unused_mockBookings_removed = [
+export const mockBookings: BookingRequest[] = [
+  // ── March 12 ──
   {
     id: "b1", patientName: "John Smith", patientEmail: "john@example.com",
-    patientPhone: "+1-555-0123", country: "United States", countryFlag: "🇺🇸", procedureId: "p1",
+    patientPhone: "+1-555-0123", country: "United States", countryFlag: "🇺🇸", procedureId: "p-implant",
     hospitalId: "h2", doctorId: "d1", preferredDateStart: "2026-03-12", preferredDateEnd: "2026-03-20",
     status: "Appointment Scheduled",
     uploadedFiles: [
@@ -661,6 +659,7 @@ const _unused_mockBookings_removed = [
     ],
     notes: "Patient prefers morning appointments.", createdAt: "2026-03-05",
     hospitalResponse: { confirmedDate: "2026-03-12", confirmedTime: "10:00", message: "Patient accepted.", status: "accepted" },
+    referralCode: "HB-SOPIKO", assignedPartnerId: "partner-sopiko",
     sessions: [
       { date: "2026-03-12", time: "09:00", durationMin: 30, title: "Consultation", doctorId: "d1", hospitalId: "h2", location: "29 Tseretheli Ave, Room 201" },
       { date: "2026-03-12", time: "10:00", durationMin: 60, title: "Dental X-Ray & Prep", doctorId: "d1", hospitalId: "h2", location: "29 Tseretheli Ave, Imaging" },
@@ -670,7 +669,7 @@ const _unused_mockBookings_removed = [
   },
   {
     id: "b2", patientName: "Anna Mueller", patientEmail: "anna@example.de",
-    patientPhone: "+49-170-1234567", country: "Germany", countryFlag: "🇩🇪", procedureId: "p3",
+    patientPhone: "+49-170-1234567", country: "Germany", countryFlag: "🇩🇪", procedureId: "p-rhino",
     hospitalId: "h2", doctorId: "d2", preferredDateStart: "2026-03-12", preferredDateEnd: "2026-03-20",
     status: "Hospital Confirmed",
     uploadedFiles: [
@@ -689,18 +688,19 @@ const _unused_mockBookings_removed = [
   },
   {
     id: "b3", patientName: "Ahmed Al-Rashid", patientEmail: "ahmed@example.sa",
-    patientPhone: "+966-50-1234567", country: "Saudi Arabia", countryFlag: "🇸🇦", procedureId: "p5",
+    patientPhone: "+966-50-1234567", country: "Saudi Arabia", countryFlag: "🇸🇦", procedureId: "p-knee",
     hospitalId: "h1", doctorId: "d3", preferredDateStart: "2026-03-12", preferredDateEnd: "2026-03-20",
     status: "Lead - Step 1: Awaiting Email Verification",
     uploadedFiles: [{ name: "passport.pdf", type: "Passport", url: "#" }],
     notes: "Missing MRI and blood test results.", createdAt: "2026-03-08",
+    referralCode: "HB-SOPIKO", assignedPartnerId: "partner-sopiko",
     sessions: [
       { date: "2026-03-14", time: "15:30", durationMin: 30, title: "Initial Consultation", doctorId: "d3", hospitalId: "h1", location: "14 Tsinamdzghvrishvili St, Room 102" },
     ],
   },
   {
     id: "b4", patientName: "Elena Petrova", patientEmail: "elena@example.ru",
-    patientPhone: "+7-900-1234567", country: "Russia", countryFlag: "🇷🇺", procedureId: "p4",
+    patientPhone: "+7-900-1234567", country: "Russia", countryFlag: "🇷🇺", procedureId: "p-stent",
     hospitalId: "h1", doctorId: "d4", preferredDateStart: "2026-03-12", preferredDateEnd: "2026-03-16",
     status: "In Treatment",
     uploadedFiles: [
@@ -719,7 +719,7 @@ const _unused_mockBookings_removed = [
   // ── March 13 ──
   {
     id: "b5", patientName: "Marcus Williams", patientEmail: "marcus@example.com",
-    patientPhone: "+1-555-9876", country: "United States", countryFlag: "🇺🇸", procedureId: "p2",
+    patientPhone: "+1-555-9876", country: "United States", countryFlag: "🇺🇸", procedureId: "p-hair",
     hospitalId: "h1", doctorId: "d5", preferredDateStart: "2026-03-13", preferredDateEnd: "2026-03-18",
     status: "Appointment Scheduled",
     uploadedFiles: [
@@ -737,7 +737,7 @@ const _unused_mockBookings_removed = [
   },
   {
     id: "b6", patientName: "Sophie Laurent", patientEmail: "sophie@example.fr",
-    patientPhone: "+33-6-12345678", country: "France", countryFlag: "🇫🇷", procedureId: "p7",
+    patientPhone: "+33-6-12345678", country: "France", countryFlag: "🇫🇷", procedureId: "p-mri",
     hospitalId: "h3", doctorId: "d6", preferredDateStart: "2026-03-13", preferredDateEnd: "2026-03-15",
     status: "In Treatment",
     uploadedFiles: [
@@ -756,7 +756,7 @@ const _unused_mockBookings_removed = [
   // ── March 14 ──
   {
     id: "b7", patientName: "Kenji Tanaka", patientEmail: "kenji@example.jp",
-    patientPhone: "+81-90-12345678", country: "Japan", countryFlag: "🇯🇵", procedureId: "p8",
+    patientPhone: "+81-90-12345678", country: "Japan", countryFlag: "🇯🇵", procedureId: "p-petct",
     hospitalId: "h3", doctorId: "d7", preferredDateStart: "2026-03-14", preferredDateEnd: "2026-03-15",
     status: "Appointment Scheduled",
     uploadedFiles: [{ name: "passport.pdf", type: "Passport", url: "#" }],
@@ -771,7 +771,7 @@ const _unused_mockBookings_removed = [
   },
   {
     id: "b10", patientName: "David Chen", patientEmail: "david@example.cn",
-    patientPhone: "+86-138-12345678", country: "China", countryFlag: "🇨🇳", procedureId: "p3",
+    patientPhone: "+86-138-12345678", country: "China", countryFlag: "🇨🇳", procedureId: "p-rhino",
     hospitalId: "h2", doctorId: "d2", preferredDateStart: "2026-03-14", preferredDateEnd: "2026-03-18",
     status: "In Treatment",
     uploadedFiles: [
@@ -781,6 +781,7 @@ const _unused_mockBookings_removed = [
     ],
     notes: "", createdAt: "2026-03-03",
     hospitalResponse: { confirmedDate: "2026-03-14", confirmedTime: "09:00", message: "Ready for surgery.", status: "accepted" },
+    referralCode: "HB-SOPIKO", assignedPartnerId: "partner-sopiko",
     sessions: [
       { date: "2026-03-14", time: "09:00", durationMin: 30, title: "Pre-Op Vitals", doctorId: "d2", hospitalId: "h2", location: "29 Tseretheli Ave, Prep Room" },
       { date: "2026-03-14", time: "13:00", durationMin: 120, title: "Rhinoplasty Surgery", doctorId: "d2", hospitalId: "h2", location: "29 Tseretheli Ave, OR-1" },
@@ -790,7 +791,7 @@ const _unused_mockBookings_removed = [
   // ── March 15 ──
   {
     id: "b11", patientName: "Fatima Al-Salem", patientEmail: "fatima@example.kw",
-    patientPhone: "+965-9123-4567", country: "Kuwait", countryFlag: "🇰🇼", procedureId: "p1",
+    patientPhone: "+965-9123-4567", country: "Kuwait", countryFlag: "🇰🇼", procedureId: "p-implant",
     hospitalId: "h2", doctorId: "d1", preferredDateStart: "2026-03-15", preferredDateEnd: "2026-03-18",
     status: "Appointment Scheduled",
     uploadedFiles: [
@@ -809,7 +810,7 @@ const _unused_mockBookings_removed = [
   },
   {
     id: "b14", patientName: "Arjun Patel", patientEmail: "arjun@example.in",
-    patientPhone: "+91-98765-43210", country: "India", countryFlag: "🇮🇳", procedureId: "p4",
+    patientPhone: "+91-98765-43210", country: "India", countryFlag: "🇮🇳", procedureId: "p-stent",
     hospitalId: "h1", doctorId: "d4", preferredDateStart: "2026-03-15", preferredDateEnd: "2026-03-16",
     status: "Appointment Scheduled",
     uploadedFiles: [
@@ -828,7 +829,7 @@ const _unused_mockBookings_removed = [
   // ── March 16 ──
   {
     id: "b16", patientName: "Carlos Mendez", patientEmail: "carlos@example.mx",
-    patientPhone: "+52-55-12345678", country: "Mexico", countryFlag: "🇲🇽", procedureId: "p5",
+    patientPhone: "+52-55-12345678", country: "Mexico", countryFlag: "🇲🇽", procedureId: "p-knee",
     hospitalId: "h1", doctorId: "d3", preferredDateStart: "2026-03-16", preferredDateEnd: "2026-03-22",
     status: "Appointment Scheduled",
     uploadedFiles: [
@@ -846,7 +847,7 @@ const _unused_mockBookings_removed = [
   },
   {
     id: "b17", patientName: "Olga Ivanova", patientEmail: "olga@example.ru",
-    patientPhone: "+7-916-1234567", country: "Russia", countryFlag: "🇷🇺", procedureId: "p6",
+    patientPhone: "+7-916-1234567", country: "Russia", countryFlag: "🇷🇺", procedureId: "p-ivf",
     hospitalId: "h1", doctorId: "d3", preferredDateStart: "2026-03-16", preferredDateEnd: "2026-03-20",
     status: "Lead - Step 3: Clinic Confirmation",
     uploadedFiles: [
@@ -861,7 +862,7 @@ const _unused_mockBookings_removed = [
   // ── March 25 (future — pending leads) ──
   {
     id: "b8", patientName: "Omar Hassan", patientEmail: "omar@example.ae",
-    patientPhone: "+971-50-1234567", country: "UAE", countryFlag: "🇦🇪", procedureId: "p4",
+    patientPhone: "+971-50-1234567", country: "UAE", countryFlag: "🇦🇪", procedureId: "p-stent",
     hospitalId: "h2", doctorId: "d8", preferredDateStart: "2026-03-25", preferredDateEnd: "2026-03-30",
     status: "Lead - Step 3: Clinic Confirmation",
     uploadedFiles: [
@@ -876,18 +877,19 @@ const _unused_mockBookings_removed = [
   },
   {
     id: "b9", patientName: "Maria Gonzalez", patientEmail: "maria@example.es",
-    patientPhone: "+34-612-345678", country: "Spain", countryFlag: "🇪🇸", procedureId: "p6",
+    patientPhone: "+34-612-345678", country: "Spain", countryFlag: "🇪🇸", procedureId: "p-ivf",
     hospitalId: "h1", doctorId: "d3", preferredDateStart: "2026-03-25", preferredDateEnd: "2026-04-05",
     status: "Lead - Step 4: Travel Booked",
     uploadedFiles: [{ name: "passport.pdf", type: "Passport", url: "#" }],
     notes: "Patient needs to submit hormonal panel and ultrasound.", createdAt: "2026-03-09",
+    referralCode: "HB-SOPIKO", assignedPartnerId: "partner-sopiko",
     sessions: [
       { date: "2026-03-25", time: "10:00", durationMin: 60, title: "IVF Initial Consult (Pending)", doctorId: "d3", hospitalId: "h1", location: "14 Tsinamdzghvrishvili St, Fertility Wing" },
     ],
   },
   {
     id: "b12", patientName: "Alexander Volkov", patientEmail: "alex@example.ru",
-    patientPhone: "+7-925-1234567", country: "Russia", countryFlag: "🇷🇺", procedureId: "p5",
+    patientPhone: "+7-925-1234567", country: "Russia", countryFlag: "🇷🇺", procedureId: "p-knee",
     hospitalId: "h1", doctorId: "d3", preferredDateStart: "2026-03-25", preferredDateEnd: "2026-04-01",
     status: "Lead - Step 4: Travel Booked",
     uploadedFiles: [
@@ -904,7 +906,7 @@ const _unused_mockBookings_removed = [
   },
   {
     id: "b13", patientName: "Lina Müller", patientEmail: "lina@example.de",
-    patientPhone: "+49-176-9876543", country: "Germany", countryFlag: "🇩🇪", procedureId: "p7",
+    patientPhone: "+49-176-9876543", country: "Germany", countryFlag: "🇩🇪", procedureId: "p-mri",
     hospitalId: "h3", doctorId: "d6", preferredDateStart: "2026-03-25", preferredDateEnd: "2026-03-28",
     status: "Lead - Step 2: Profile Completed",
     uploadedFiles: [],
@@ -913,7 +915,7 @@ const _unused_mockBookings_removed = [
   },
   {
     id: "b15", patientName: "Yuki Tanaka", patientEmail: "yuki@example.jp",
-    patientPhone: "+81-80-98765432", country: "Japan", countryFlag: "🇯🇵", procedureId: "p3",
+    patientPhone: "+81-80-98765432", country: "Japan", countryFlag: "🇯🇵", procedureId: "p-rhino",
     hospitalId: "h2", doctorId: "d2", preferredDateStart: "2026-03-25", preferredDateEnd: "2026-03-30",
     status: "Awaiting Hospital Response",
     uploadedFiles: [
@@ -925,5 +927,5 @@ const _unused_mockBookings_removed = [
       { date: "2026-03-25", time: "11:00", durationMin: 60, title: "Rhinoplasty Consult (Pending)", doctorId: "d2", hospitalId: "h2", location: "29 Tseretheli Ave, Room 305" },
     ],
   },
-] as BookingRequest[];
+];
 

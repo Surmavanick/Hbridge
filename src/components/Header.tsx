@@ -142,9 +142,8 @@ export default function Header() {
     <>
     <header className="sticky top-0 z-50 bg-card/95 backdrop-blur-md border-b border-border">
       <div className="container-max section-padding flex items-center justify-between h-16">
-        <Link to="/" className="flex items-center gap-2">
-          <img src={logo} alt="Health Bridge" className="h-9 w-auto" />
-          <span className="hidden sm:block text-primary" style={{ fontFamily: "'Agbalumo', cursive", fontSize: "1.47rem", lineHeight: "1" }}>Health Bridge</span>
+        <Link to="/" className="flex items-center gap-2 ml-8">
+          <img src={logo} alt="Health Bridge" className="h-12 w-auto" />
         </Link>
 
         {/* Desktop nav */}

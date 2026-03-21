@@ -371,9 +371,21 @@ export default function BookPage() {
                         onChange={(e) => setBudget(e.target.value)}
                         placeholder={`e.g. $${selectedProcedure.priceMin.toLocaleString()} – $${selectedProcedure.priceMax.toLocaleString()}`}
                       />
-                      <p className="text-xs text-muted-foreground mt-1">
-                        Enter your approximate budget so we can find the best match for you.
-                      </p>
+                      {(() => {
+                        const num = parseFloat(budget.replace(/[^0-9.]/g, ""));
+                        if (budget.trim() && !isNaN(num) && num < selectedProcedure.priceMin) {
+                          return (
+                            <p className="text-xs text-destructive mt-1 font-medium">
+                              ⚠ This amount is below the recommended minimum (${selectedProcedure.priceMin.toLocaleString()}). We may not be able to find a suitable option within this budget.
+                            </p>
+                          );
+                        }
+                        return (
+                          <p className="text-xs text-muted-foreground mt-1">
+                            Enter your approximate budget so we can find the best match for you.
+                          </p>
+                        );
+                      })()}
                     </div>
                   </div>
                 );
