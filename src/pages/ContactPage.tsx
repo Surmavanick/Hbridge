@@ -27,14 +27,14 @@ export default function ContactPage() {
               <div className="p-2 rounded-lg bg-primary/10 text-primary"><Mail className="h-5 w-5" /></div>
               <div>
                 <p className="text-sm font-medium text-foreground">Email</p>
-                <p className="text-sm text-muted-foreground">info@healthbridge.com</p>
+                <p className="text-sm text-muted-foreground">healtbridge@gmail.com</p>
               </div>
             </div>
             <div className="flex items-center gap-3">
               <div className="p-2 rounded-lg bg-primary/10 text-primary"><Phone className="h-5 w-5" /></div>
               <div>
                 <p className="text-sm font-medium text-foreground">Phone</p>
-                <p className="text-sm text-muted-foreground">+995 555 123 456</p>
+                <p className="text-sm text-muted-foreground">+995 032 152 856</p>
               </div>
             </div>
             <div className="flex items-center gap-3">
