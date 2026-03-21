@@ -59,7 +59,9 @@ export default function BookPage() {
     if (!file || !uploadingDoc) return;
     e.target.value = "";
 
-    const filePath = `${Date.now()}_${file.name.replace(/\s+/g, "_")}`;
+    const ext = file.name.split(".").pop() ?? "bin";
+    const safeName = `${Date.now()}_${uploadingDoc.replace(/\s+/g, "_").replace(/[^a-zA-Z0-9_\-]/g, "")}.${ext}`
+    const filePath = safeName;
     const { error } = await supabase.storage.from("documents").upload(filePath, file);
     if (error) {
       toast.error("Upload failed: " + error.message);
