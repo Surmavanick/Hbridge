@@ -107,7 +107,7 @@ export default function Header() {
           message: `Your new password is: ${newPassword}. Please log in and change your password.`,
           reply_to: recoveryEmail,
         },
-        EMAILJS_CONFIG.publicKey
+        { publicKey: EMAILJS_CONFIG.publicKey }
       );
       toast.success("New password sent to your email.");
       setIsRecovering(false);
