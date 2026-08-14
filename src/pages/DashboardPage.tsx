@@ -2,7 +2,8 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/store/authStore";
 import { useBookings } from "@/store/bookingStore";
 import { procedures, flightEstimates } from "@/data/mockData";
-import type { BookingStatus, BookingRequest } from "@/data/mockData";
+import type { BookingStatus, BookingRequest, FlightEstimate } from "@/data/mockData";
+import { fetchLiveFlightPrice, type LiveFlightPrice } from "@/lib/flightPrices";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -140,6 +141,39 @@ function CancelModal({
           </div>
         </div>
       </div>
+    </div>
+  );
+}
+
+// ── Flight price card (live price when available, static estimate otherwise) ──
+function FlightPriceCard({ estimate }: { estimate: FlightEstimate }) {
+  const [live, setLive] = useState<LiveFlightPrice | null>(null);
+
+  useEffect(() => {
+    if (!estimate.iata) return;
+    let cancelled = false;
+    fetchLiveFlightPrice(estimate.iata).then((res) => {
+      if (!cancelled && res) setLive(res);
+    });
+    return () => { cancelled = true; };
+  }, [estimate.iata]);
+
+  const min = live?.min ?? estimate.priceMin;
+  const max = live?.max ?? estimate.priceMax;
+
+  return (
+    <div className="bg-white rounded-xl px-2.5 py-2 border border-slate-100">
+      <div className="flex items-center justify-between gap-1">
+        <p className="text-[12px] font-medium text-slate-700 truncate">{estimate.city}</p>
+        {live && (
+          <span className="text-[9px] font-semibold text-green-600 bg-green-50 px-1.5 py-0.5 rounded-full flex-shrink-0">
+            LIVE
+          </span>
+        )}
+      </div>
+      <p className="text-[12.5px] font-semibold text-blue-600 mt-0.5">
+        ${min} – ${max}
+      </p>
     </div>
   );
 }
@@ -329,16 +363,11 @@ export default function DashboardPage() {
                           </div>
                           <div className="grid grid-cols-3 gap-2">
                             {flightEstimates[booking.country].map((f) => (
-                              <div key={f.city} className="bg-white rounded-xl px-2.5 py-2 border border-slate-100">
-                                <p className="text-[12px] font-medium text-slate-700 truncate">{f.city}</p>
-                                <p className="text-[12.5px] font-semibold text-blue-600 mt-0.5">
-                                  ${f.priceMin} – ${f.priceMax}
-                                </p>
-                              </div>
+                              <FlightPriceCard key={f.city} estimate={f} />
                             ))}
                           </div>
                           <p className="text-[11px] text-slate-400 mt-2">
-                            Round-trip, economy class. Estimated — actual fares vary by season and airline.
+                            Round-trip, economy class. Prices marked LIVE are pulled from Google Flights; others are estimates.
                           </p>
                         </div>
                       </div>
