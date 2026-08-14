@@ -117,6 +117,103 @@ export const countries = [
   "UAE", "Saudi Arabia", "Ukraine", "Azerbaijan", "Canada", "India", "Turkey"
 ];
 
+// ── Flight cost estimates: top 3 largest cities per country → Tbilisi (TBS) ──
+// Round-trip, economy class, approximate USD ranges. Estimates only — actual
+// fares vary by season, airline, and booking window.
+export interface FlightEstimate {
+  city: string;
+  priceMin: number;
+  priceMax: number;
+}
+
+export const flightEstimates: Record<string, FlightEstimate[]> = {
+  "Russia": [
+    { city: "Moscow", priceMin: 150, priceMax: 280 },
+    { city: "Saint Petersburg", priceMin: 200, priceMax: 350 },
+    { city: "Novosibirsk", priceMin: 300, priceMax: 450 },
+  ],
+  "Armenia": [
+    { city: "Yerevan", priceMin: 80, priceMax: 150 },
+    { city: "Gyumri", priceMin: 100, priceMax: 180 },
+    { city: "Vanadzor", priceMin: 100, priceMax: 180 },
+  ],
+  "Kazakhstan": [
+    { city: "Almaty", priceMin: 250, priceMax: 400 },
+    { city: "Astana", priceMin: 280, priceMax: 430 },
+    { city: "Shymkent", priceMin: 300, priceMax: 450 },
+  ],
+  "Germany": [
+    { city: "Berlin", priceMin: 180, priceMax: 320 },
+    { city: "Hamburg", priceMin: 220, priceMax: 400 },
+    { city: "Munich", priceMin: 190, priceMax: 340 },
+  ],
+  "Israel": [
+    { city: "Jerusalem", priceMin: 180, priceMax: 320 },
+    { city: "Tel Aviv", priceMin: 150, priceMax: 300 },
+    { city: "Haifa", priceMin: 200, priceMax: 350 },
+  ],
+  "Australia": [
+    { city: "Sydney", priceMin: 900, priceMax: 1500 },
+    { city: "Melbourne", priceMin: 950, priceMax: 1550 },
+    { city: "Brisbane", priceMin: 1000, priceMax: 1600 },
+  ],
+  "United States": [
+    { city: "New York", priceMin: 600, priceMax: 1000 },
+    { city: "Los Angeles", priceMin: 750, priceMax: 1200 },
+    { city: "Chicago", priceMin: 650, priceMax: 1050 },
+  ],
+  "China": [
+    { city: "Shanghai", priceMin: 500, priceMax: 850 },
+    { city: "Beijing", priceMin: 450, priceMax: 800 },
+    { city: "Guangzhou", priceMin: 500, priceMax: 850 },
+  ],
+  "United Kingdom": [
+    { city: "London", priceMin: 220, priceMax: 400 },
+    { city: "Birmingham", priceMin: 250, priceMax: 430 },
+    { city: "Manchester", priceMin: 250, priceMax: 430 },
+  ],
+  "France": [
+    { city: "Paris", priceMin: 220, priceMax: 400 },
+    { city: "Marseille", priceMin: 260, priceMax: 440 },
+    { city: "Lyon", priceMin: 260, priceMax: 440 },
+  ],
+  "UAE": [
+    { city: "Dubai", priceMin: 180, priceMax: 320 },
+    { city: "Abu Dhabi", priceMin: 190, priceMax: 330 },
+    { city: "Sharjah", priceMin: 170, priceMax: 300 },
+  ],
+  "Saudi Arabia": [
+    { city: "Riyadh", priceMin: 280, priceMax: 450 },
+    { city: "Jeddah", priceMin: 300, priceMax: 470 },
+    { city: "Mecca", priceMin: 300, priceMax: 470 },
+  ],
+  "Ukraine": [
+    { city: "Kyiv", priceMin: 150, priceMax: 280 },
+    { city: "Kharkiv", priceMin: 180, priceMax: 320 },
+    { city: "Odesa", priceMin: 180, priceMax: 320 },
+  ],
+  "Azerbaijan": [
+    { city: "Baku", priceMin: 80, priceMax: 150 },
+    { city: "Ganja", priceMin: 100, priceMax: 180 },
+    { city: "Sumqayit", priceMin: 100, priceMax: 180 },
+  ],
+  "Canada": [
+    { city: "Toronto", priceMin: 700, priceMax: 1150 },
+    { city: "Montreal", priceMin: 700, priceMax: 1150 },
+    { city: "Vancouver", priceMin: 850, priceMax: 1350 },
+  ],
+  "India": [
+    { city: "Mumbai", priceMin: 300, priceMax: 500 },
+    { city: "Delhi", priceMin: 280, priceMax: 480 },
+    { city: "Bangalore", priceMin: 350, priceMax: 550 },
+  ],
+  "Turkey": [
+    { city: "Istanbul", priceMin: 100, priceMax: 200 },
+    { city: "Ankara", priceMin: 130, priceMax: 230 },
+    { city: "Izmir", priceMin: 150, priceMax: 260 },
+  ],
+};
+
 export const procedures: Procedure[] = [
   // ── I. Cardiology ────────────────────────────────────────────────────
   {

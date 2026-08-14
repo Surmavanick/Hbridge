@@ -1,0 +1,7 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(curl -s https://hbridge.vercel.app/assets/index-DXhLmIL6.js)"
+    ]
+  }
+}

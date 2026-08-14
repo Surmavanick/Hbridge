@@ -1,0 +1,768 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AI Travel Processing</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    :root {
+      --bg: #f6f7f9;
+      --card: #ffffff;
+      --card-soft: #fbfbfc;
+      --line: #e5e7eb;
+      --text: #0f172a;
+      --muted: #64748b;
+      --muted-2: #94a3b8;
+      --dark: #111827;
+      --success: #10b981;
+      --success-soft: #ecfdf5;
+      --success-line: #bbf7d0;
+      --shadow: 0 20px 60px rgba(15, 23, 42, 0.06);
+      --shadow-soft: 0 10px 30px rgba(15, 23, 42, 0.06);
+      --radius-xl: 32px;
+      --radius-lg: 28px;
+      --radius-md: 18px;
+      --radius-sm: 14px;
+    }
+
+    body {
+      margin: 0;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+        Roboto, Helvetica, Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+    }
+
+    .section {
+      min-height: 100vh;
+      padding: 64px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .wrap {
+      width: 100%;
+      max-width: 920px;
+    }
+
+    .hero {
+      text-align: center;
+      margin-bottom: 32px;
+      animation: fadeUp 0.6s ease both;
+    }
+
+    .eyebrow {
+      margin: 0;
+      font-size: 12px;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: var(--muted-2);
+      font-weight: 600;
+    }
+
+    .hero h1 {
+      margin: 12px 0 0;
+      font-size: clamp(34px, 5vw, 54px);
+      line-height: 1.05;
+      letter-spacing: -0.03em;
+      font-weight: 700;
+    }
+
+    .card {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: var(--radius-xl);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+      animation: fadeUp 0.7s ease both;
+    }
+
+    .card-inner {
+      padding: 28px;
+    }
+
+    .card-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+
+    .top-left p {
+      margin: 0;
+      font-size: 11px;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: var(--muted-2);
+      font-weight: 600;
+    }
+
+    .top-left h2 {
+      margin: 10px 0 0;
+      font-size: 30px;
+      line-height: 1.1;
+      letter-spacing: -0.02em;
+    }
+
+    .pill {
+      border: 1px solid var(--line);
+      background: #f8fafc;
+      color: var(--muted);
+      font-size: 14px;
+      padding: 10px 14px;
+      border-radius: 999px;
+      white-space: nowrap;
+    }
+
+    .visual-box {
+      position: relative;
+      min-height: 330px;
+      border: 1px solid var(--line);
+      background: var(--card-soft);
+      border-radius: var(--radius-lg);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      margin-bottom: 28px;
+    }
+
+    .ring {
+      position: absolute;
+      border: 1px solid rgba(203, 213, 225, 0.9);
+      border-radius: 999px;
+      animation: spin linear infinite;
+    }
+
+    .ring-1 {
+      width: 360px;
+      height: 360px;
+      animation-duration: 18s;
+      opacity: 0.72;
+    }
+
+    .ring-2 {
+      width: 280px;
+      height: 280px;
+      animation-duration: 16s;
+      animation-direction: reverse;
+      opacity: 0.82;
+    }
+
+    .ring-3 {
+      width: 200px;
+      height: 200px;
+      animation-duration: 14s;
+      opacity: 0.9;
+    }
+
+    .pulse {
+      position: absolute;
+      width: 120px;
+      height: 120px;
+      border-radius: 999px;
+      background: rgba(226, 232, 240, 0.9);
+      filter: blur(28px);
+      animation: pulse 2.2s ease-in-out infinite;
+    }
+
+    .center-content {
+      position: relative;
+      z-index: 2;
+      text-align: center;
+      max-width: 500px;
+      padding: 0 20px;
+      animation: fadeScale 0.35s ease;
+    }
+
+    .center-icon {
+      width: 96px;
+      height: 96px;
+      margin: 0 auto;
+      border-radius: 28px;
+      border: 1px solid var(--line);
+      background: #fff;
+      box-shadow: var(--shadow-soft);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      animation: iconFloat 2s ease-in-out infinite;
+    }
+
+    .center-icon.complete {
+      background: var(--success-soft);
+      border-color: var(--success-line);
+    }
+
+    .icon-svg {
+      width: 40px;
+      height: 40px;
+      color: #334155;
+    }
+
+    .center-icon.complete .icon-svg {
+      color: var(--success);
+    }
+
+    .center-title {
+      margin: 24px 0 0;
+      font-size: 30px;
+      line-height: 1.15;
+      letter-spacing: -0.02em;
+      font-weight: 700;
+    }
+
+    .center-subtitle {
+      margin: 14px auto 0;
+      max-width: 430px;
+      font-size: 14px;
+      line-height: 1.9;
+      color: var(--muted);
+    }
+
+    .run-pill {
+      margin-top: 18px;
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      border-radius: 999px;
+      border: 1px solid var(--line);
+      background: #fff;
+      color: var(--muted);
+      padding: 10px 14px;
+      font-size: 14px;
+      box-shadow: 0 4px 14px rgba(15, 23, 42, 0.03);
+    }
+
+    .run-pill.complete {
+      border-color: var(--success-line);
+      background: var(--success-soft);
+      color: #047857;
+      box-shadow: none;
+    }
+
+    .spinner {
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      border: 2px solid #cbd5e1;
+      border-top-color: #111827;
+      animation: spin 0.8s linear infinite;
+    }
+
+    .dots {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .dots span {
+      width: 6px;
+      height: 6px;
+      border-radius: 999px;
+      background: #94a3b8;
+      display: block;
+      animation: dots 1s ease-in-out infinite;
+    }
+
+    .dots span:nth-child(2) {
+      animation-delay: 0.15s;
+    }
+
+    .dots span:nth-child(3) {
+      animation-delay: 0.3s;
+    }
+
+    .progress-block {
+      margin-bottom: 24px;
+    }
+
+    .progress-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 14px;
+      color: var(--muted);
+      margin-bottom: 12px;
+    }
+
+    .progress-bar {
+      height: 10px;
+      border-radius: 999px;
+      background: #f1f5f9;
+      overflow: hidden;
+    }
+
+    .progress-fill {
+      height: 100%;
+      width: 10%;
+      border-radius: 999px;
+      background: var(--dark);
+      transition: width 0.55s ease, background-color 0.3s ease;
+    }
+
+    .steps {
+      display: grid;
+      gap: 12px;
+    }
+
+    .step {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 16px;
+      border-radius: 20px;
+      border: 1px solid var(--line);
+      background: #fff;
+      transition: 0.25s ease;
+    }
+
+    .step.active {
+      background: #f8fafc;
+      border-color: #d1d5db;
+      animation: breathe 1.4s ease-in-out infinite;
+    }
+
+    .step.done {
+      background: rgba(236, 253, 245, 0.7);
+      border-color: #d1fae5;
+    }
+
+    .step-icon {
+      width: 44px;
+      height: 44px;
+      flex: 0 0 44px;
+      border-radius: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #f1f5f9;
+      color: #64748b;
+    }
+
+    .step.active .step-icon {
+      background: #111827;
+      color: #fff;
+    }
+
+    .step.done .step-icon {
+      background: #d1fae5;
+      color: #059669;
+    }
+
+    .step-icon svg {
+      width: 20px;
+      height: 20px;
+    }
+
+    .step-main {
+      min-width: 0;
+      flex: 1;
+    }
+
+    .step-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .step-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text);
+    }
+
+    .step-subtitle {
+      margin-top: 4px;
+      font-size: 12px;
+      line-height: 1.6;
+      color: var(--muted);
+    }
+
+    .badge {
+      flex-shrink: 0;
+      padding: 6px 10px;
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: 600;
+      background: #f1f5f9;
+      color: #64748b;
+    }
+
+    .badge.active {
+      background: #111827;
+      color: #fff;
+    }
+
+    .badge.done {
+      background: #d1fae5;
+      color: #047857;
+    }
+
+    @keyframes spin {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+
+    @keyframes pulse {
+      0%, 100% {
+        transform: scale(1);
+        opacity: 0.4;
+      }
+      50% {
+        transform: scale(1.14);
+        opacity: 0.7;
+      }
+    }
+
+    @keyframes dots {
+      0%, 100% {
+        transform: translateY(0);
+        opacity: 0.3;
+      }
+      50% {
+        transform: translateY(-3px);
+        opacity: 1;
+      }
+    }
+
+    @keyframes iconFloat {
+      0%, 100% {
+        transform: scale(1) rotate(0deg);
+      }
+      30% {
+        transform: scale(1.04) rotate(4deg);
+      }
+      60% {
+        transform: scale(1.04) rotate(-4deg);
+      }
+    }
+
+    @keyframes breathe {
+      0%, 100% {
+        transform: scale(1);
+      }
+      50% {
+        transform: scale(1.008);
+      }
+    }
+
+    @keyframes fadeUp {
+      from {
+        opacity: 0;
+        transform: translateY(24px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes fadeScale {
+      from {
+        opacity: 0;
+        transform: translateY(12px) scale(0.92);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+      }
+    }
+
+    @media (max-width: 768px) {
+      .section {
+        padding: 40px 16px;
+      }
+
+      .card-inner {
+        padding: 20px;
+      }
+
+      .card-top {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+
+      .top-left h2 {
+        font-size: 24px;
+      }
+
+      .visual-box {
+        min-height: 290px;
+      }
+
+      .ring-1 {
+        width: 300px;
+        height: 300px;
+      }
+
+      .ring-2 {
+        width: 220px;
+        height: 220px;
+      }
+
+      .ring-3 {
+        width: 150px;
+        height: 150px;
+      }
+
+      .center-title {
+        font-size: 24px;
+      }
+
+      .step-row {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+    }
+  </style>
+</head>
+<body>
+  <section class="section">
+    <div class="wrap">
+      <div class="hero">
+        <p class="eyebrow">AI Travel Flow</p>
+        <h1>Travel planning in progress</h1>
+      </div>
+
+      <div class="card">
+        <div class="card-inner">
+          <div class="card-top">
+            <div class="top-left">
+              <p>Live workflow</p>
+              <h2>AI Travel Processing</h2>
+            </div>
+            <div class="pill" id="headerStatus">Processing</div>
+          </div>
+
+          <div class="visual-box">
+            <div class="ring ring-1"></div>
+            <div class="ring ring-2"></div>
+            <div class="ring ring-3"></div>
+            <div class="pulse"></div>
+
+            <div class="center-content" id="centerContent">
+              <div class="center-icon" id="centerIcon"></div>
+              <h3 class="center-title" id="centerTitle">Analyzing traveler request</h3>
+              <p class="center-subtitle" id="centerSubtitle">
+                Reading destination, timing, and preferences.
+              </p>
+              <div class="run-pill" id="runPill">
+                <span class="spinner" id="spinner"></span>
+                <span id="runLabel">Running task</span>
+                <span class="dots" id="dots">
+                  <span></span><span></span><span></span>
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <div class="progress-block">
+            <div class="progress-top">
+              <span>Workflow progress</span>
+              <span id="progressText">10%</span>
+            </div>
+            <div class="progress-bar">
+              <div class="progress-fill" id="progressFill"></div>
+            </div>
+          </div>
+
+          <div class="steps" id="steps"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <script>
+    const workflow = [
+      {
+        title: "Analyzing traveler request",
+        subtitle: "Reading destination, timing, and preferences.",
+        key: "brain"
+      },
+      {
+        title: "Checking travel documents",
+        subtitle: "Verifying passport, visa, and required files.",
+        key: "shield"
+      },
+      {
+        title: "Checking booking options",
+        subtitle: "Matching the best booking window and availability.",
+        key: "ticket"
+      },
+      {
+        title: "Checking flights",
+        subtitle: "Reviewing routes and timing combinations.",
+        key: "plane"
+      },
+      {
+        title: "Scheduling and check-in setup",
+        subtitle: "Preparing reminders and next-step timing.",
+        key: "calendar"
+      },
+      {
+        title: "Sending confirmation email",
+        subtitle: "Packaging summary and next actions.",
+        key: "mail"
+      }
+    ];
+
+    const LOOP_MS = 1700;
+    const HOLD_DONE_MS = 2200;
+
+    let activeIndex = 0;
+    let isComplete = false;
+    let stepTimer = null;
+    let resetTimer = null;
+
+    const stepsEl = document.getElementById("steps");
+    const centerIcon = document.getElementById("centerIcon");
+    const centerTitle = document.getElementById("centerTitle");
+    const centerSubtitle = document.getElementById("centerSubtitle");
+    const runPill = document.getElementById("runPill");
+    const runLabel = document.getElementById("runLabel");
+    const progressFill = document.getElementById("progressFill");
+    const progressText = document.getElementById("progressText");
+    const headerStatus = document.getElementById("headerStatus");
+    const dots = document.getElementById("dots");
+    const spinner = document.getElementById("spinner");
+    const centerContent = document.getElementById("centerContent");
+
+    function iconSVG(key) {
+      const common = 'viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" class="icon-svg"';
+      const icons = {
+        brain: `<svg ${common}><path d="M9.5 3.5a3.5 3.5 0 0 0-3.5 3.5v.5A3 3 0 0 0 3 10.5 3.5 3.5 0 0 0 6.5 14H7v1a3 3 0 0 0 3 3"/><path d="M14.5 3.5A3.5 3.5 0 0 1 18 7v.5a3 3 0 0 1 3 3 3.5 3.5 0 0 1-3.5 3.5H17v1a3 3 0 0 1-3 3"/><path d="M12 6v12"/><path d="M9 8.5c.8.5 1.5.8 3 .8s2.2-.3 3-.8"/><path d="M9 15.5c.8-.5 1.5-.8 3-.8s2.2.3 3 .8"/></svg>`,
+        shield: `<svg ${common}><path d="M12 3l7 3v6c0 4.5-3 7.5-7 9-4-1.5-7-4.5-7-9V6l7-3z"/><path d="M9.5 12.5l1.7 1.7 3.8-4.2"/></svg>`,
+        ticket: `<svg ${common}><path d="M4 8a2 2 0 0 0 0 4v4h16v-4a2 2 0 0 1 0-4V4H4v4z"/><path d="M9 4v12"/><path d="M9 8h0"/><path d="M9 12h0"/></svg>`,
+        plane: `<svg ${common}><path d="M21 16v-2l-8-5V4.5a1.5 1.5 0 0 0-3 0V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5L21 16z"/></svg>`,
+        calendar: `<svg ${common}><path d="M8 2v4"/><path d="M16 2v4"/><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18"/><path d="M9 15l2 2 4-4"/></svg>`,
+        mail: `<svg ${common}><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/></svg>`,
+        checkDouble: `<svg ${common}><path d="M7 12l3 3 7-7"/><path d="M3 12l3 3 2-2"/></svg>`,
+        check: `<svg ${common}><path d="M5 13l4 4L19 7"/></svg>`
+      };
+      return icons[key] || icons.brain;
+    }
+
+    function centerStateData() {
+      if (isComplete) {
+        return {
+          title: "Done. Trip workflow prepared.",
+          subtitle: "Booking, flights, schedule, and email are ready.",
+          key: "checkDouble"
+        };
+      }
+      return workflow[activeIndex];
+    }
+
+    function progressValue() {
+      if (isComplete) return 100;
+      return Math.max(10, ((activeIndex + 0.35) / workflow.length) * 100);
+    }
+
+    function completedCount() {
+      return isComplete ? workflow.length : activeIndex;
+    }
+
+    function renderCenter() {
+      const current = centerStateData();
+
+      centerContent.style.animation = "none";
+      void centerContent.offsetWidth;
+      centerContent.style.animation = "fadeScale 0.35s ease";
+
+      centerTitle.textContent = current.title;
+      centerSubtitle.textContent = current.subtitle;
+      centerIcon.innerHTML = iconSVG(current.key);
+      centerIcon.classList.toggle("complete", isComplete);
+
+      if (isComplete) {
+        headerStatus.textContent = "Completed";
+        runPill.classList.add("complete");
+        runLabel.textContent = "All checks completed";
+        spinner.style.display = "none";
+        dots.style.display = "none";
+      } else {
+        headerStatus.textContent = "Processing";
+        runPill.classList.remove("complete");
+        runLabel.textContent = "Running task";
+        spinner.style.display = "inline-block";
+        dots.style.display = "inline-flex";
+      }
+    }
+
+    function renderProgress() {
+      const value = Math.round(progressValue());
+      progressText.textContent = value + "%";
+      progressFill.style.width = value + "%";
+      progressFill.style.backgroundColor = isComplete ? "#10b981" : "#111827";
+    }
+
+    function renderSteps() {
+      const doneCount = completedCount();
+
+      stepsEl.innerHTML = workflow.map((step, idx) => {
+        const done = idx < doneCount || isComplete;
+        const active = !isComplete && idx === activeIndex;
+
+        return `
+          <div class="step ${done ? "done" : ""} ${active ? "active" : ""}">
+            <div class="step-icon">
+              ${done ? iconSVG("check") : iconSVG(step.key)}
+            </div>
+            <div class="step-main">
+              <div class="step-row">
+                <div class="step-title">${step.title}</div>
+                <div class="badge ${done ? "done" : active ? "active" : ""}">
+                  ${done ? "Done" : active ? "Loading" : "Waiting"}
+                </div>
+              </div>
+              <div class="step-subtitle">${step.subtitle}</div>
+            </div>
+          </div>
+        `;
+      }).join("");
+    }
+
+    function renderAll() {
+      renderCenter();
+      renderProgress();
+      renderSteps();
+    }
+
+    function runSequence() {
+      clearInterval(stepTimer);
+      clearTimeout(resetTimer);
+
+      stepTimer = setInterval(() => {
+        if (activeIndex >= workflow.length - 1) {
+          clearInterval(stepTimer);
+          isComplete = true;
+          renderAll();
+
+          resetTimer = setTimeout(() => {
+            isComplete = false;
+            activeIndex = 0;
+            renderAll();
+            runSequence();
+          }, HOLD_DONE_MS);
+
+          return;
+        }
+
+        activeIndex += 1;
+        renderAll();
+      }, LOOP_MS);
+    }
+
+    renderAll();
+    runSequence();
+  </script>
+</body>
+</html>

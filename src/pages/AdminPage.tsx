@@ -1,4 +1,5 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useRef } from "react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -13,7 +14,7 @@ import {
   type BookingRequest, type BookingSession, type BookingStatus,
 } from "@/data/mockData";
 import { useBookings } from "@/store/bookingStore";
-import { Building2, Calendar as CalendarIcon, MapPin, Users, ChevronLeft, ChevronRight, Activity, Clock, FileText, LayoutGrid, CheckCircle2, AlertCircle, Phone, Mail, MoreHorizontal, DollarSign, TrendingUp, Search, Columns, Hourglass, MailWarning, AlertTriangle, Plane, CircleDot, Copy, Check, UserPlus } from "lucide-react";
+import { Building2, Calendar as CalendarIcon, MapPin, Users, ChevronLeft, ChevronRight, Activity, Clock, FileText, LayoutGrid, CheckCircle2, AlertCircle, Phone, Mail, MoreHorizontal, DollarSign, TrendingUp, Search, Columns, Hourglass, MailWarning, AlertTriangle, Plane, CircleDot, Copy, Check, UserPlus, Sparkles } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell, LabelList } from "recharts";
 import { cn } from "@/lib/utils";
 import { format, addDays } from "date-fns";
@@ -154,6 +155,81 @@ export default function AdminPage() {
   const [apProcedure, setApProcedure] = useState("");
   const [apNotes, setApNotes] = useState("");
   const [apSubmitting, setApSubmitting] = useState(false);
+
+  // ── AI Processing ──────────────────────────────────────────────────────────
+  const [aiRunning, setAiRunning]         = useState(false);
+  const [aiProcStep, setAiProcStep]       = useState(-1);
+  const [aiProcComplete, setAiProcComplete] = useState(false);
+  const aiTimers = useRef<ReturnType<typeof setTimeout>[]>([]);
+
+  const AI_FLOW = [
+    { title: "Verifying & accepting lead",        subtitle: "Confirming patient identity and assigning to your portfolio.", icon: "usercheck"  },
+    { title: "Reviewing profile & documents",     subtitle: "Validating uploaded files and checking completeness.",        icon: "filecheck"  },
+    { title: "Notifying clinic via WhatsApp",     subtitle: "Sending patient summary and documents to partner clinic.",    icon: "message"    },
+    { title: "Clinic confirmed the appointment",  subtitle: "Clinic reviewed the case and accepted the patient.",          icon: "hospital"   },
+    { title: "Booking flights & accommodation",   subtitle: "Comparing routes, hotel prices and locking in the best deal.",icon: "plane"      },
+    { title: "Sending final invoice to patient",  subtitle: "Travel confirmed — price list compiled and invoice dispatched.", icon: "send"   },
+  ];
+
+  function aiSVG(key: string, size = 20) {
+    const s = `width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"`;
+    const paths: Record<string, string> = {
+      usercheck:  `<svg ${s}><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><polyline points="16 11 18 13 22 9"/></svg>`,
+      filecheck:  `<svg ${s}><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><path d="M9 15l2 2 4-4"/></svg>`,
+      message:    `<svg ${s}><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/><path d="M8 10h8"/><path d="M8 14h5"/></svg>`,
+      hospital:   `<svg ${s}><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M12 8v8"/><path d="M8 12h8"/></svg>`,
+      plane:      `<svg ${s}><path d="M21 16v-2l-8-5V4.5a1.5 1.5 0 0 0-3 0V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5L21 16z"/></svg>`,
+      send:       `<svg ${s}><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>`,
+      checkdbl:   `<svg ${s}><path d="M7 12l3 3 7-7"/><path d="M3 12l3 3 2-2"/></svg>`,
+      check:      `<svg ${s}><path d="M5 13l4 4L19 7"/></svg>`,
+    };
+    return paths[key] ?? paths.check;
+  }
+
+  const runAIProcessing = () => {
+    const target = [...myBookings]
+      .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+      .find(b => b.status === "Lead - Step 1: Awaiting Email Verification");
+    if (!target) { toast.error("No new leads in Step 1 to process."); return; }
+
+    aiTimers.current.forEach(clearTimeout);
+    aiTimers.current = [];
+    setAiRunning(true);
+    setAiProcStep(-1);
+    setAiProcComplete(false);
+
+    const STEP_MS = 1800;
+    const id = target.id;
+
+    const steps: Array<() => void> = [
+      () => { setAiProcStep(0); if (user) assignBooking(id, user.id);
+              aiTimers.current.push(setTimeout(() => toast.success(`Lead accepted — ${target.patientName} assigned to you ✓`), 900)); },
+      () => { setAiProcStep(1); updateStatus(id, "Lead - Step 2: Profile Completed");
+              aiTimers.current.push(setTimeout(() => toast.success("Profile complete — all documents verified ✓"), 900)); },
+      () => { setAiProcStep(2); updateStatus(id, "Awaiting Hospital Response");
+              aiTimers.current.push(setTimeout(() => toast("📲 WhatsApp notification sent to clinic — awaiting reply"), 900)); },
+      () => { setAiProcStep(3); updateStatus(id, "Lead - Step 3: Clinic Confirmation");
+              aiTimers.current.push(setTimeout(() => toast.success("Clinic accepted the patient ✓ — appointment confirmed"), 900)); },
+      () => { setAiProcStep(4); updateStatus(id, "Travel Coordination in Progress");
+              aiTimers.current.push(setTimeout(() => { toast("✈️ Flights checked · Apartments booked · Price list received ✓");
+                updateStatus(id, "Lead - Step 4: Travel Booked"); }, 900)); },
+      () => { setAiProcStep(5); updateStatus(id, "Lead - Step 5: Awaiting Arrival");
+              aiTimers.current.push(setTimeout(() => toast.success("Final invoice dispatched — patient is pre-arrival ready ✓"), 900)); },
+    ];
+
+    steps.forEach((fn, idx) => {
+      aiTimers.current.push(setTimeout(fn, idx * STEP_MS));
+    });
+
+    aiTimers.current.push(setTimeout(() => {
+      setAiProcComplete(true);
+      aiTimers.current.push(setTimeout(() => {
+        setAiRunning(false);
+        setAiProcStep(-1);
+        setAiProcComplete(false);
+      }, 2400));
+    }, steps.length * STEP_MS));
+  };
 
   const handleAddPatient = () => {
     if (!apName || !apEmail || !apPhone || !apProcedure) return;
@@ -362,10 +438,137 @@ export default function AdminPage() {
                     </button>
                   )}
                 </div>
-                <Button size="sm" className="h-8 w-full sm:w-auto" onClick={() => setShowAddPatient(true)}>
-                  <UserPlus className="h-4 w-4 mr-1.5" /> Add Patient Manually
-                </Button>
+                <div className="flex items-center gap-2 w-full sm:w-auto">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="h-8 flex-1 sm:flex-none gap-1.5 border-primary/30 text-primary hover:bg-primary/5"
+                    onClick={runAIProcessing}
+                    disabled={aiRunning}
+                  >
+                    <Sparkles className="h-3.5 w-3.5" />
+                    {aiRunning ? "Processing…" : "AI Process Lead"}
+                  </Button>
+                  <Button size="sm" className="h-8 flex-1 sm:flex-none" onClick={() => setShowAddPatient(true)}>
+                    <UserPlus className="h-4 w-4 mr-1.5" /> Add Patient Manually
+                  </Button>
+                </div>
              </div>
+
+             {/* ── AI Processing inline strip ── */}
+             {aiRunning && (
+               <div className="ai-animate-fade-scale mb-4 shrink-0" style={{
+                 background: "#fff", border: "1px solid #e5e7eb",
+                 borderRadius: 18, overflow: "hidden",
+                 boxShadow: "0 4px 20px rgba(15,23,42,0.07)",
+               }}>
+                 {/* top progress bar */}
+                 <div style={{ height: 4, background: "#f1f5f9" }}>
+                   <div style={{
+                     height: "100%",
+                     width: aiProcComplete ? "100%" : aiProcStep >= 0 ? `${Math.round(((aiProcStep + 0.5) / AI_FLOW.length) * 100)}%` : "3%",
+                     background: aiProcComplete ? "#10b981" : "linear-gradient(90deg,#6366f1,#3b82f6)",
+                     transition: "width 0.6s ease, background 0.4s ease",
+                     borderRadius: "0 4px 4px 0",
+                   }} />
+                 </div>
+
+                 <div style={{ padding: "14px 20px" }}>
+                   {/* header row */}
+                   <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>
+                     <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                       {aiProcComplete
+                         ? <div style={{ width: 28, height: 28, borderRadius: 8, background: "#ecfdf5", color: "#10b981", display: "flex", alignItems: "center", justifyContent: "center" }}
+                             dangerouslySetInnerHTML={{ __html: aiSVG("checkdbl", 14) }} />
+                         : <div style={{ width: 28, height: 28, borderRadius: 8, background: "#f1f5f9", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                             <div style={{ width: 13, height: 13, borderRadius: "50%", border: "2px solid #cbd5e1", borderTopColor: "#6366f1", animation: "spin 0.8s linear infinite" }} />
+                           </div>
+                       }
+                       <div>
+                         <span style={{ fontSize: 13, fontWeight: 700, color: "#0f172a" }}>
+                           {aiProcComplete ? "AI Processing Complete" : "AI Lead Processing"}
+                         </span>
+                         {!aiProcComplete && aiProcStep >= 0 && (
+                           <span style={{ fontSize: 12, color: "#64748b", marginLeft: 8 }}>— {AI_FLOW[aiProcStep].title}</span>
+                         )}
+                       </div>
+                     </div>
+                     <span style={{
+                       fontSize: 11.5, fontWeight: 700, padding: "4px 10px", borderRadius: 999,
+                       background: aiProcComplete ? "#ecfdf5" : "#f1f5f9",
+                       color: aiProcComplete ? "#047857" : "#64748b",
+                       border: `1px solid ${aiProcComplete ? "#bbf7d0" : "#e5e7eb"}`,
+                     }}>
+                       {aiProcComplete ? "All done ✓" : `Step ${Math.max(aiProcStep + 1, 1)} of ${AI_FLOW.length}`}
+                     </span>
+                   </div>
+
+                   {/* horizontal steps */}
+                   <div style={{ display: "flex", alignItems: "flex-start", gap: 0 }}>
+                     {AI_FLOW.map((wf, idx) => {
+                       const done   = aiProcComplete || idx < aiProcStep;
+                       const active = !aiProcComplete && idx === aiProcStep;
+                       const isLast = idx === AI_FLOW.length - 1;
+                       return (
+                         <div key={idx} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", position: "relative" }}>
+                           {/* connector line left */}
+                           {idx > 0 && (
+                             <div style={{
+                               position: "absolute", left: 0, top: 17, width: "50%", height: 2,
+                               background: done || active ? (aiProcComplete ? "#10b981" : "#6366f1") : "#e5e7eb",
+                               transition: "background 0.4s ease",
+                               zIndex: 0,
+                             }} />
+                           )}
+                           {/* connector line right */}
+                           {!isLast && (
+                             <div style={{
+                               position: "absolute", right: 0, top: 17, width: "50%", height: 2,
+                               background: done ? (aiProcComplete ? "#10b981" : "#6366f1") : "#e5e7eb",
+                               transition: "background 0.4s ease",
+                               zIndex: 0,
+                             }} />
+                           )}
+
+                           {/* icon circle */}
+                           <div className={active ? "ai-animate-breathe" : ""} style={{
+                             position: "relative", zIndex: 1,
+                             width: 36, height: 36, borderRadius: "50%",
+                             border: `2px solid ${done ? (aiProcComplete ? "#10b981" : "#6366f1") : active ? "#6366f1" : "#e5e7eb"}`,
+                             background: done ? (aiProcComplete ? "#ecfdf5" : "#eef2ff") : active ? "#fff" : "#f8fafc",
+                             display: "flex", alignItems: "center", justifyContent: "center",
+                             color: done ? (aiProcComplete ? "#059669" : "#6366f1") : active ? "#6366f1" : "#cbd5e1",
+                             boxShadow: active ? "0 0 0 4px rgba(99,102,241,0.12)" : "none",
+                             transition: "all 0.3s ease",
+                           }}
+                             dangerouslySetInnerHTML={{ __html: aiSVG(done ? "check" : wf.icon, 15) }}
+                           />
+
+                           {/* label */}
+                           <div style={{ marginTop: 8, textAlign: "center", padding: "0 4px" }}>
+                             <p style={{
+                               margin: 0, fontSize: 10.5, fontWeight: active ? 700 : done ? 600 : 500, lineHeight: 1.3,
+                               color: done ? (aiProcComplete ? "#059669" : "#6366f1") : active ? "#0f172a" : "#94a3b8",
+                               transition: "color 0.3s",
+                             }}>
+                               {wf.title.split(" ").slice(0, 3).join(" ")}
+                             </p>
+                             {active && (
+                               <span style={{ display: "inline-flex", gap: 2, marginTop: 3 }}>
+                                 <span className="ai-dot" style={{ width: 3, height: 3, borderRadius: 999, background: "#6366f1", display: "block" }} />
+                                 <span className="ai-dot" style={{ width: 3, height: 3, borderRadius: 999, background: "#6366f1", display: "block" }} />
+                                 <span className="ai-dot" style={{ width: 3, height: 3, borderRadius: 999, background: "#6366f1", display: "block" }} />
+                               </span>
+                             )}
+                             {done && <p style={{ margin: "2px 0 0", fontSize: 9.5, color: aiProcComplete ? "#10b981" : "#818cf8", fontWeight: 600 }}>Done</p>}
+                           </div>
+                         </div>
+                       );
+                     })}
+                   </div>
+                 </div>
+               </div>
+             )}
 
              <div className="flex-1 overflow-hidden">
                 <KanbanBoard
@@ -594,6 +797,7 @@ export default function AdminPage() {
           </div>
         </DialogContent>
       </Dialog>
+
     </div>
   );
 }

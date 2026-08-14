@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -47,6 +47,62 @@ export default function BookPage() {
   const [uploadingDoc, setUploadingDoc] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  // Step 3 AI animation
+  const [aiStep, setAiStep] = useState(-1);
+  const [aiComplete, setAiComplete] = useState(false);
+
+  const aiWorkflow = [
+    { title: "Analyzing patient request", subtitle: "Reading procedure, dates, and medical preferences." },
+    { title: "Verifying documents", subtitle: "Checking uploaded medical files and records." },
+    { title: "Matching clinics", subtitle: "Finding the best facility for your treatment." },
+    { title: "Checking availability", subtitle: "Confirming appointment slots and schedules." },
+    { title: "Calculating treatment plan", subtitle: "Preparing your personalized medical schedule." },
+    { title: "Sending confirmation", subtitle: "Dispatching your booking details to our team." },
+  ];
+
+  const aiIcons = ["brain", "shield", "hospital", "calendar", "clipboard", "mail"];
+  const DOCS_STEP_INDEX = 1; // "Verifying documents"
+  const noDocsUploaded = files.length === 0;
+
+  function aiIconSVG(key: string, cls = "w-5 h-5") {
+    const attrs = `viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className="${cls}"`;
+    const map: Record<string, string> = {
+      brain: `<svg ${attrs}><path d="M9.5 3.5a3.5 3.5 0 0 0-3.5 3.5v.5A3 3 0 0 0 3 10.5 3.5 3.5 0 0 0 6.5 14H7v1a3 3 0 0 0 3 3"/><path d="M14.5 3.5A3.5 3.5 0 0 1 18 7v.5a3 3 0 0 1 3 3 3.5 3.5 0 0 1-3.5 3.5H17v1a3 3 0 0 1-3 3"/><path d="M12 6v12"/><path d="M9 8.5c.8.5 1.5.8 3 .8s2.2-.3 3-.8"/><path d="M9 15.5c.8-.5 1.5-.8 3-.8s2.2.3 3 .8"/></svg>`,
+      shield: `<svg ${attrs}><path d="M12 3l7 3v6c0 4.5-3 7.5-7 9-4-1.5-7-4.5-7-9V6l7-3z"/><path d="M9.5 12.5l1.7 1.7 3.8-4.2"/></svg>`,
+      hospital: `<svg ${attrs}><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M12 8v8"/><path d="M8 12h8"/></svg>`,
+      calendar: `<svg ${attrs}><path d="M8 2v4"/><path d="M16 2v4"/><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18"/><path d="M9 15l2 2 4-4"/></svg>`,
+      clipboard: `<svg ${attrs}><rect x="8" y="2" width="8" height="4" rx="1"/><path d="M8 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2h-2"/><path d="M9 12h6"/><path d="M9 16h4"/></svg>`,
+      mail: `<svg ${attrs}><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/></svg>`,
+      checkDouble: `<svg ${attrs}><path d="M7 12l3 3 7-7"/><path d="M3 12l3 3 2-2"/></svg>`,
+      check: `<svg ${attrs}><path d="M5 13l4 4L19 7"/></svg>`,
+      warning: `<svg ${attrs}><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg>`,
+    };
+    return map[key] || map.brain;
+  }
+
+  useEffect(() => {
+    if (step !== 3) {
+      setAiStep(-1);
+      setAiComplete(false);
+      return;
+    }
+    const LOOP_MS = 1700;
+    const HOLD_DONE_MS = 2200;
+    const timers: ReturnType<typeof setTimeout>[] = [];
+
+    aiWorkflow.forEach((_, idx) => {
+      timers.push(setTimeout(() => setAiStep(idx), idx * LOOP_MS));
+    });
+
+    timers.push(setTimeout(() => {
+      setAiComplete(true);
+      timers.push(setTimeout(() => { handleSubmit(); }, HOLD_DONE_MS));
+    }, aiWorkflow.length * LOOP_MS));
+
+    return () => timers.forEach(clearTimeout);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [step]);
+
   const selectedProcedure = procedures.find((p) => p.id === procedureId);
 
   const handleFileUpload = (docType: string) => {
@@ -79,6 +135,27 @@ export default function BookPage() {
 
   const removeFile = (index: number) => {
     setFiles((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  const fillDemo = () => {
+    setName("Alex Johnson");
+    setEmail("alex.johnson@gmail.com");
+    setPhone("+995 555 123 456");
+    setCountry("United Kingdom");
+    setProcedureId("p-radiation");
+    const from = addDays(new Date(), 16);
+    const to = addDays(new Date(), 37);
+    setDateRange({ from, to });
+    setBudget("$8,500");
+    setNotes("Demo patient — testing the booking flow. No real medical data.");
+    setFiles([
+      { name: "passport_demo.pdf", type: "Passport", url: "#demo" },
+      { name: "oncology_report_demo.pdf", type: "Oncology Diagnosis Report", url: "#demo" },
+      { name: "ct_scan_demo.jpg", type: "CT / MRI Scan", url: "#demo" },
+      { name: "medical_history_demo.pdf", type: "Medical History", url: "#demo" },
+      { name: "radiation_records_demo.pdf", type: "Previous Radiation Records", url: "#demo" },
+    ]);
+    toast.success("Demo data filled! You can now proceed through all steps.");
   };
 
   const canProceedStep1 = country && procedureId && dateRange.from && dateRange.to && name && email && phone;
@@ -164,11 +241,12 @@ export default function BookPage() {
         <div className="max-w-md mx-auto">
           <CheckCircle className="h-16 w-16 text-trust mx-auto mb-4" />
           <h1 className="text-2xl font-heading font-bold text-foreground mb-2">Request Submitted!</h1>
-          <p className="text-muted-foreground mb-6">
-            Thank you, {name}. We've received your booking request for{" "}
-            <strong>{selectedProcedure?.name}</strong>. Our team will review your documents and get back to you within 24–48 hours.
+          <p className="text-muted-foreground mb-3">
+            Our AI has processed your data for <strong>{selectedProcedure?.name}</strong> and submitted your request to our medical team.
           </p>
-          <p className="text-sm text-muted-foreground mb-6">A confirmation email has been sent to <strong>{email}</strong>.</p>
+          <p className="text-muted-foreground mb-6">
+            You will receive your authorization code and all relevant booking information at <strong>{email}</strong>.
+          </p>
           <div className="flex items-center justify-center gap-3">
             <Button onClick={() => navigate("/dashboard")} className="rounded-xl">View My Booking Status</Button>
             <Button onClick={() => navigate("/")} variant="outline" className="rounded-xl">Back to Home</Button>
@@ -205,7 +283,12 @@ export default function BookPage() {
         {step === 1 && (
           <Card>
             <CardContent className="p-6 space-y-4">
-              <h2 className="font-heading font-semibold text-foreground">Your Information</h2>
+              <div className="flex items-center justify-between">
+                <h2 className="font-heading font-semibold text-foreground">Your Information</h2>
+                <Button size="sm" variant="outline" onClick={fillDemo} className="text-xs gap-1.5 border-dashed">
+                  Fill Demo
+                </Button>
+              </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="text-sm font-medium text-foreground mb-1 block">Full Name *</label>
@@ -525,89 +608,169 @@ export default function BookPage() {
           </Card>
         )}
 
-        {/* Step 3 */}
+        {/* Step 3 — AI Processing Animation (matches Healthbridge.html) */}
         {step === 3 && selectedProcedure && (
-          <Card>
-            <CardContent className="p-6 space-y-5">
-              <h2 className="font-heading font-semibold text-foreground">Review Your Request</h2>
+          <div style={{ background: "#fff", border: "1px solid #e5e7eb", borderRadius: 32, boxShadow: "0 20px 60px rgba(15,23,42,0.06)", overflow: "hidden" }}>
+            <div style={{ padding: 28 }}>
 
-              <div className="space-y-4">
-                <div className="grid grid-cols-2 gap-4 text-sm">
-                  <div><span className="text-muted-foreground">Name:</span> <span className="font-medium text-foreground block">{name}</span></div>
-                  <div><span className="text-muted-foreground">Email:</span> <span className="font-medium text-foreground block">{email}</span></div>
-                  <div><span className="text-muted-foreground">Phone:</span> <span className="font-medium text-foreground block">{phone}</span></div>
-                  <div><span className="text-muted-foreground">Country:</span> <span className="font-medium text-foreground block">{country}</span></div>
+              {/* Card top */}
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 16, marginBottom: 24 }}>
+                <div>
+                  <p style={{ margin: 0, fontSize: 11, letterSpacing: "0.22em", textTransform: "uppercase", color: "#94a3b8", fontWeight: 600 }}>Live workflow</p>
+                  <h2 style={{ margin: "10px 0 0", fontSize: 30, lineHeight: 1.1, letterSpacing: "-0.02em", fontWeight: 700, color: "#0f172a" }}>AI Medical Processing</h2>
                 </div>
-
-                <div className="border-t border-border pt-4">
-                  <div className="text-sm">
-                    <span className="text-muted-foreground">Procedure:</span>
-                    <span className="font-medium text-foreground block">{selectedProcedure.name}</span>
-                  </div>
-                  <div className="text-sm mt-2">
-                    <span className="text-muted-foreground">Preferred Dates:</span>
-                    <span className="font-medium text-foreground block">
-                      {dateRange.from && dateRange.to
-                        ? `${format(dateRange.from, "MMMM d, yyyy")} – ${format(dateRange.to, "MMMM d, yyyy")}`
-                        : "Not selected"}
-                    </span>
-                  </div>
-                  <div className="text-sm mt-2">
-                    <span className="text-muted-foreground">Price Range:</span>
-                    <span className="font-semibold text-foreground block">{selectedProcedure.priceRange}</span>
-                  </div>
-                  <div className="text-sm mt-1">
-                    <span className="text-muted-foreground">Average Cost:</span>
-                    <span className="font-semibold text-primary block">{selectedProcedure.avgCost}</span>
-                  </div>
-                  <div className="text-sm mt-1">
-                    <span className="text-muted-foreground">Hospitalization:</span>
-                    <span className="font-medium text-foreground block">{selectedProcedure.hospitalizationDays}</span>
-                  </div>
-                  {budget.trim() && (
-                    <div className="text-sm mt-1">
-                      <span className="text-muted-foreground">Your Budget:</span>
-                      <span className="font-medium text-foreground block">{budget.trim()}</span>
-                    </div>
-                  )}
-                  {referralCode.trim() && (
-                    <div className="text-sm mt-2">
-                      <span className="text-muted-foreground">Referral Code:</span>
-                      <span className="font-medium text-foreground block">{referralCode.trim()}</span>
-                    </div>
-                  )}
+                <div style={{
+                  border: "1px solid #e5e7eb", background: aiComplete ? "#ecfdf5" : "#f8fafc",
+                  color: aiComplete ? "#047857" : "#64748b", fontSize: 14, padding: "10px 14px",
+                  borderRadius: 999, whiteSpace: "nowrap",
+                  ...(aiComplete ? { borderColor: "#bbf7d0" } : {})
+                }}>
+                  {aiComplete ? "Completed" : "Processing"}
                 </div>
-
-                <div className="border-t border-border pt-4">
-                  <p className="text-sm text-muted-foreground mb-2">Uploaded Documents ({files.length})</p>
-                  {files.length > 0 ? (
-                    <div className="flex flex-wrap gap-2">
-                      {files.map((f, i) => (
-                        <span key={i} className="text-xs bg-secondary text-secondary-foreground px-2.5 py-1 rounded-full">{f.type}</span>
-                      ))}
-                    </div>
-                  ) : (
-                    <p className="text-sm text-warning">No documents uploaded. You may be asked for documents later.</p>
-                  )}
-                </div>
-
-                {notes && (
-                  <div className="border-t border-border pt-4">
-                    <p className="text-sm text-muted-foreground mb-1">Notes</p>
-                    <p className="text-sm text-foreground">{notes}</p>
-                  </div>
-                )}
               </div>
 
-              <div className="flex justify-between pt-2">
-                <Button variant="outline" onClick={() => setStep(2)} className="gap-2"><ArrowLeft className="h-4 w-4" /> Back</Button>
-                <Button onClick={handleSubmit} disabled={submitting} className="gap-2">
-                  <CheckCircle className="h-4 w-4" />
-                  {submitting ? "Submitting..." : "Submit Request"}
+              {/* Visual box */}
+              <div style={{
+                position: "relative", minHeight: 330, border: "1px solid #e5e7eb",
+                background: "#fbfbfc", borderRadius: 28,
+                display: "flex", alignItems: "center", justifyContent: "center",
+                overflow: "hidden", marginBottom: 28
+              }}>
+                {/* Rings */}
+                <div className="animate-spin" style={{ position: "absolute", width: 360, height: 360, borderRadius: 999, border: "1px solid rgba(203,213,225,0.9)", animationDuration: "18s", opacity: 0.72 }} />
+                <div className="animate-spin ai-ring-reverse" style={{ position: "absolute", width: 280, height: 280, borderRadius: 999, border: "1px solid rgba(203,213,225,0.9)", animationDuration: "16s", opacity: 0.82 }} />
+                <div className="animate-spin" style={{ position: "absolute", width: 200, height: 200, borderRadius: 999, border: "1px solid rgba(203,213,225,0.9)", animationDuration: "14s", opacity: 0.9 }} />
+                {/* Pulse */}
+                <div className="ai-animate-pulse" style={{ position: "absolute", width: 120, height: 120, borderRadius: 999, background: "rgba(226,232,240,0.9)", filter: "blur(28px)" }} />
+
+                {/* Center content */}
+                {(() => {
+                  const showDocsWarning = !aiComplete && aiStep === DOCS_STEP_INDEX && noDocsUploaded;
+                  return (
+                <div key={aiComplete ? "done" : aiStep} className="ai-animate-fade-scale" style={{ position: "relative", zIndex: 2, textAlign: "center", maxWidth: 500, padding: "0 20px" }}>
+                  {/* Icon */}
+                  <div
+                    className={aiComplete ? "" : "ai-animate-float"}
+                    style={{
+                      width: 96, height: 96, margin: "0 auto", borderRadius: 28,
+                      border: `1px solid ${showDocsWarning ? "#fecaca" : aiComplete ? "#bbf7d0" : "#e5e7eb"}`,
+                      background: showDocsWarning ? "#fef2f2" : aiComplete ? "#ecfdf5" : "#fff",
+                      boxShadow: "0 10px 30px rgba(15,23,42,0.06)",
+                      display: "flex", alignItems: "center", justifyContent: "center",
+                      color: showDocsWarning ? "#dc2626" : aiComplete ? "#10b981" : "#334155",
+                    }}
+                    dangerouslySetInnerHTML={{
+                      __html: aiIconSVG(
+                        showDocsWarning ? "warning" : aiComplete ? "checkDouble" : (aiStep >= 0 ? aiIcons[aiStep] : "brain"),
+                        "w-10 h-10"
+                      )
+                    }}
+                  />
+                  {/* Title */}
+                  <h3 style={{ margin: "24px 0 0", fontSize: 30, lineHeight: 1.15, letterSpacing: "-0.02em", fontWeight: 700, color: showDocsWarning ? "#b91c1c" : "#0f172a" }}>
+                    {showDocsWarning ? "No documents uploaded" : aiComplete ? "Done. Request prepared." : (aiStep >= 0 ? aiWorkflow[aiStep].title : "Starting…")}
+                  </h3>
+                  {/* Subtitle */}
+                  <p style={{ margin: "14px auto 0", maxWidth: 430, fontSize: 14, lineHeight: 1.9, color: showDocsWarning ? "#dc2626" : "#64748b" }}>
+                    {showDocsWarning ? "Your request can still be submitted, but our medical team will need documents from you before proceeding." : aiComplete ? "All checks completed. Submitting your request…" : (aiStep >= 0 ? aiWorkflow[aiStep].subtitle : "")}
+                  </p>
+                  {/* Run pill */}
+                  <div style={{
+                    marginTop: 18, display: "inline-flex", alignItems: "center", gap: 10,
+                    borderRadius: 999, border: `1px solid ${showDocsWarning ? "#fecaca" : aiComplete ? "#bbf7d0" : "#e5e7eb"}`,
+                    background: showDocsWarning ? "#fef2f2" : aiComplete ? "#ecfdf5" : "#fff",
+                    color: showDocsWarning ? "#b91c1c" : aiComplete ? "#047857" : "#64748b",
+                    padding: "10px 14px", fontSize: 14,
+                    boxShadow: aiComplete ? "none" : "0 4px 14px rgba(15,23,42,0.03)"
+                  }}>
+                    {aiComplete ? (
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" style={{ width: 14, height: 14 }}><path d="M5 13l4 4L19 7"/></svg>
+                    ) : showDocsWarning ? (
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" style={{ width: 14, height: 14 }}><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg>
+                    ) : (
+                      <div style={{ width: 14, height: 14, borderRadius: "50%", border: "2px solid #cbd5e1", borderTopColor: "#111827", animation: "spin 0.8s linear infinite" }} />
+                    )}
+                    <span>{aiComplete ? "All checks completed" : showDocsWarning ? "Missing documents" : "Running task"}</span>
+                    {!aiComplete && !showDocsWarning && (
+                      <span style={{ display: "inline-flex", alignItems: "center", gap: 4 }}>
+                        <span className="ai-dot" style={{ width: 6, height: 6, borderRadius: 999, background: "#94a3b8", display: "block" }} />
+                        <span className="ai-dot" style={{ width: 6, height: 6, borderRadius: 999, background: "#94a3b8", display: "block" }} />
+                        <span className="ai-dot" style={{ width: 6, height: 6, borderRadius: 999, background: "#94a3b8", display: "block" }} />
+                      </span>
+                    )}
+                  </div>
+                </div>
+                  );
+                })()}
+              </div>
+
+              {/* Progress */}
+              <div style={{ marginBottom: 24 }}>
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", fontSize: 14, color: "#64748b", marginBottom: 12 }}>
+                  <span>Workflow progress</span>
+                  <span>{aiComplete ? "100%" : aiStep >= 0 ? `${Math.round(((aiStep + 0.35) / aiWorkflow.length) * 100)}%` : "10%"}</span>
+                </div>
+                <div style={{ height: 10, borderRadius: 999, background: "#f1f5f9", overflow: "hidden" }}>
+                  <div style={{
+                    height: "100%", borderRadius: 999,
+                    width: aiComplete ? "100%" : aiStep >= 0 ? `${Math.round(((aiStep + 0.35) / aiWorkflow.length) * 100)}%` : "10%",
+                    backgroundColor: aiComplete ? "#10b981" : "#111827",
+                    transition: "width 0.55s ease, background-color 0.3s ease"
+                  }} />
+                </div>
+              </div>
+
+              {/* Step list */}
+              <div style={{ display: "grid", gap: 12 }}>
+                {aiWorkflow.map((wf, idx) => {
+                  const done = aiComplete || idx < aiStep;
+                  const active = !aiComplete && idx === aiStep;
+                  const warn = idx === DOCS_STEP_INDEX && noDocsUploaded && (done || active);
+                  return (
+                    <div key={idx} className={active && !warn ? "ai-animate-breathe" : ""}
+                      style={{
+                        display: "flex", alignItems: "center", gap: 14, padding: 16,
+                        borderRadius: 20, border: `1px solid ${warn ? "#fecaca" : done ? "#d1fae5" : active ? "#d1d5db" : "#e5e7eb"}`,
+                        background: warn ? "rgba(254,242,242,0.75)" : done ? "rgba(236,253,245,0.7)" : active ? "#f8fafc" : "#fff",
+                        transition: "0.25s ease"
+                      }}>
+                      <div
+                        style={{
+                          width: 44, height: 44, flexShrink: 0, borderRadius: 16,
+                          display: "flex", alignItems: "center", justifyContent: "center",
+                          background: warn ? "#fee2e2" : done ? "#d1fae5" : active ? "#111827" : "#f1f5f9",
+                          color: warn ? "#dc2626" : done ? "#059669" : active ? "#fff" : "#64748b",
+                        }}
+                        dangerouslySetInnerHTML={{ __html: aiIconSVG(warn ? "warning" : done ? "check" : aiIcons[idx], "w-5 h-5") }}
+                      />
+                      <div style={{ minWidth: 0, flex: 1 }}>
+                        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
+                          <span style={{ fontSize: 14, fontWeight: 600, color: warn ? "#b91c1c" : "#0f172a" }}>{wf.title}</span>
+                          <span style={{
+                            flexShrink: 0, padding: "6px 10px", borderRadius: 999, fontSize: 11, fontWeight: 600,
+                            background: warn ? "#fee2e2" : done ? "#d1fae5" : active ? "#111827" : "#f1f5f9",
+                            color: warn ? "#b91c1c" : done ? "#047857" : active ? "#fff" : "#64748b",
+                          }}>
+                            {warn ? "Missing" : done ? "Done" : active ? "Loading" : "Waiting"}
+                          </span>
+                        </div>
+                        <p style={{ marginTop: 4, fontSize: 12, lineHeight: 1.6, color: warn ? "#dc2626" : "#64748b" }}>
+                          {warn ? "No documents were uploaded for this request." : wf.subtitle}
+                        </p>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+
+              <div style={{ marginTop: 24 }}>
+                <Button variant="outline" onClick={() => setStep(2)} disabled={aiStep > 0} className="gap-2 text-sm">
+                  <ArrowLeft className="h-4 w-4" /> Back
                 </Button>
               </div>
-            </CardContent>
-          </Card>
+
+            </div>
+          </div>
         )}
       </div>
     </div>
