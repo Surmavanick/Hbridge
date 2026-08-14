@@ -101,6 +101,7 @@ export default function Header() {
         EMAILJS_CONFIG.serviceId,
         EMAILJS_CONFIG.templateId,
         {
+          email: recoveryEmail,
           patient_name: selectedRole === "user" ? "Patient" : selectedRole === "partner" ? "Partner" : "Clinic",
           procedure_name: "Password Recovery",
           date_from: "N/A",

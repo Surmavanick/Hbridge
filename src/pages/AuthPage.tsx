@@ -48,6 +48,7 @@ export default function AuthPage() {
         EMAILJS_CONFIG.serviceId,
         EMAILJS_CONFIG.templateId,
         {
+          email: recoveryEmail,
           patient_name: role === "user" ? "Patient" : role === "partner" ? "Partner" : "Clinic",
           procedure_name: "Password Recovery",
           date_from: "N/A",
