@@ -22,7 +22,7 @@ export default function BookPage() {
   const [params] = useSearchParams();
   const navigate = useNavigate();
   const { addBooking } = useBookings();
-  const { register, getPartnerByReferralCode } = useAuth();
+  const { register, resetPassword, getPartnerByReferralCode } = useAuth();
   const [step, setStep] = useState(1);
   const [submitting, setSubmitting] = useState(false);
 
@@ -199,8 +199,13 @@ export default function BookPage() {
     addBooking(newBooking);
 
     // ── 2. Create patient account with temp password ───────────────────
+    // If the email is already registered, register() no-ops — reset its
+    // password instead so the temp password we email always matches what's stored.
     const tempPassword = Math.random().toString(36).slice(-8);
-    register(name, email, tempPassword);
+    const isNewAccount = register(name, email, tempPassword);
+    if (!isNewAccount) {
+      resetPassword(email, "user", tempPassword);
+    }
 
     // ── 3. Send confirmation email via EmailJS ─────────────────────────
     if (isEmailJSConfigured()) {
