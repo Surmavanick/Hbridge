@@ -137,27 +137,6 @@ export default function BookPage() {
     setFiles((prev) => prev.filter((_, i) => i !== index));
   };
 
-  const fillDemo = () => {
-    setName("Alex Johnson");
-    setEmail("alex.johnson@gmail.com");
-    setPhone("+995 555 123 456");
-    setCountry("United Kingdom");
-    setProcedureId("p-radiation");
-    const from = addDays(new Date(), 16);
-    const to = addDays(new Date(), 37);
-    setDateRange({ from, to });
-    setBudget("$8,500");
-    setNotes("Demo patient — testing the booking flow. No real medical data.");
-    setFiles([
-      { name: "passport_demo.pdf", type: "Passport", url: "#demo" },
-      { name: "oncology_report_demo.pdf", type: "Oncology Diagnosis Report", url: "#demo" },
-      { name: "ct_scan_demo.jpg", type: "CT / MRI Scan", url: "#demo" },
-      { name: "medical_history_demo.pdf", type: "Medical History", url: "#demo" },
-      { name: "radiation_records_demo.pdf", type: "Previous Radiation Records", url: "#demo" },
-    ]);
-    toast.success("Demo data filled! You can now proceed through all steps.");
-  };
-
   const canProceedStep1 = country && procedureId && dateRange.from && dateRange.to && name && email && phone;
 
   const handleSubmit = async () => {
@@ -288,12 +267,7 @@ export default function BookPage() {
         {step === 1 && (
           <Card>
             <CardContent className="p-6 space-y-4">
-              <div className="flex items-center justify-between">
-                <h2 className="font-heading font-semibold text-foreground">Your Information</h2>
-                <Button size="sm" variant="outline" onClick={fillDemo} className="text-xs gap-1.5 border-dashed">
-                  Fill Demo
-                </Button>
-              </div>
+              <h2 className="font-heading font-semibold text-foreground">Your Information</h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="text-sm font-medium text-foreground mb-1 block">Full Name *</label>
