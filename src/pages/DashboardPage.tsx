@@ -158,7 +158,6 @@ function FlightPriceCard({ estimate }: { estimate: FlightEstimate }) {
     return () => { cancelled = true; };
   }, [estimate.iata]);
 
-  const min = live?.min ?? estimate.priceMin;
   const max = live?.max ?? estimate.priceMax;
 
   return (
@@ -172,7 +171,7 @@ function FlightPriceCard({ estimate }: { estimate: FlightEstimate }) {
         )}
       </div>
       <p className="text-[12.5px] font-semibold text-blue-600 mt-0.5">
-        ${min} – ${max}
+        ${max}
       </p>
     </div>
   );
@@ -366,9 +365,6 @@ export default function DashboardPage() {
                               <FlightPriceCard key={f.city} estimate={f} />
                             ))}
                           </div>
-                          <p className="text-[11px] text-slate-400 mt-2">
-                            Round-trip, economy class. Prices marked LIVE are pulled from Google Flights; others are estimates.
-                          </p>
                         </div>
                       </div>
                     )}
