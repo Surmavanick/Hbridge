@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { format, addDays, startOfDay } from "date-fns";
 import type { BookingRequest } from "@/data/mockData";
 import { procedures, hospitals, mockDoctors } from "@/data/mockData";
@@ -47,6 +47,15 @@ export function ClinicPatientDrawer({ booking, onClose }: ClinicPatientDrawerPro
   const [declineReason, setDeclineReason] = useState("");
   const [showMoreInfo, setShowMoreInfo] = useState(false);
   const [moreInfoMessage, setMoreInfoMessage] = useState("");
+  const declineFormRef = useRef<HTMLDivElement>(null);
+  const moreInfoFormRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (showDecline) declineFormRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+  }, [showDecline]);
+  useEffect(() => {
+    if (showMoreInfo) moreInfoFormRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+  }, [showMoreInfo]);
 
   const procedure = booking ? procedures.find((p) => p.id === booking.procedureId) : undefined;
   const hospital = booking ? hospitals.find((h) => h.id === booking.hospitalId) : undefined;
@@ -426,35 +435,48 @@ export function ClinicPatientDrawer({ booking, onClose }: ClinicPatientDrawerPro
 
           {/* Decline / More info */}
           <div className="flex gap-2">
-            <Button variant="outline" className="flex-1 rounded-xl text-amber-700 border-amber-200 hover:bg-amber-50" onClick={() => { setShowMoreInfo((v) => !v); setShowDecline(false); }}>
+            <Button
+              variant={showMoreInfo ? "default" : "outline"}
+              className={cn(
+                "flex-1 rounded-xl",
+                showMoreInfo ? "bg-amber-500 hover:bg-amber-600 text-white" : "text-amber-700 border-amber-200 hover:bg-amber-50"
+              )}
+              onClick={() => { setShowMoreInfo((v) => !v); setShowDecline(false); }}
+            >
               <HelpCircle className="h-4 w-4 mr-1.5" /> Request More Info
             </Button>
-            <Button variant="outline" className="flex-1 rounded-xl text-red-600 border-red-200 hover:bg-red-50" onClick={() => { setShowDecline((v) => !v); setShowMoreInfo(false); }}>
+            <Button
+              variant={showDecline ? "destructive" : "outline"}
+              className={cn("flex-1 rounded-xl", !showDecline && "text-red-600 border-red-200 hover:bg-red-50")}
+              onClick={() => { setShowDecline((v) => !v); setShowMoreInfo(false); }}
+            >
               <XCircle className="h-4 w-4 mr-1.5" /> Decline Case
             </Button>
           </div>
 
           {showMoreInfo && (
-            <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 space-y-2.5">
+            <div ref={moreInfoFormRef} className="bg-amber-50 border border-amber-200 rounded-xl p-4 space-y-2.5 scroll-mt-4">
               <Textarea
                 value={moreInfoMessage}
                 onChange={(e) => setMoreInfoMessage(e.target.value)}
                 placeholder="What's missing? e.g. Need updated blood test results before we can confirm."
                 rows={3}
                 className="bg-white"
+                autoFocus
               />
               <Button size="sm" className="bg-amber-500 hover:bg-amber-600" onClick={handleRequestMoreInfo}>Send Request</Button>
             </div>
           )}
 
           {showDecline && (
-            <div className="bg-red-50 border border-red-200 rounded-xl p-4 space-y-2.5">
+            <div ref={declineFormRef} className="bg-red-50 border border-red-200 rounded-xl p-4 space-y-2.5 scroll-mt-4">
               <Textarea
                 value={declineReason}
                 onChange={(e) => setDeclineReason(e.target.value)}
                 placeholder="Reason for declining — shared with the partner/patient."
                 rows={3}
                 className="bg-white"
+                autoFocus
               />
               <Button size="sm" variant="destructive" onClick={handleDecline}>Confirm Decline</Button>
             </div>
