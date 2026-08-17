@@ -19,6 +19,7 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContaine
 import { cn } from "@/lib/utils";
 import { format, addDays } from "date-fns";
 import { useAuth } from "@/store/authStore";
+import { getDoctorBusySlots, findFirstFreeSlotInRange, findNextFreeSlot, pickBestDoctor } from "@/lib/doctorAvailability";
 
 // NEW COMPONENTS
 import { KanbanBoard } from "@/components/admin/KanbanBoard";
@@ -201,14 +202,47 @@ export default function AdminPage() {
     const STEP_MS = 1800;
     const id = target.id;
     const targetHospital = hospitals.find((h) => h.id === AI_TARGET_HOSPITAL_ID);
+    const targetProcedure = procedures.find((p) => p.id === target.procedureId);
+
+    // Pick the best-matching doctor on staff and the first slot they actually have
+    // open — prefer one inside the patient's requested window, else their next
+    // free slot at all. This is a suggestion: the clinic reviews/changes it.
+    const hospitalDoctors = mockDoctors.filter((d) => d.hospitalId === AI_TARGET_HOSPITAL_ID);
+    const bestDoctor = targetProcedure ? pickBestDoctor(hospitalDoctors, targetProcedure.category) : hospitalDoctors[0];
+    let suggestedSlot: { date: string; time: string } | null = null;
+    if (bestDoctor) {
+      const busySlots = getDoctorBusySlots(bestDoctor.id, bookings);
+      suggestedSlot =
+        (target.preferredDateStart && target.preferredDateEnd
+          ? findFirstFreeSlotInRange(busySlots, target.preferredDateStart, target.preferredDateEnd)
+          : null) ?? findNextFreeSlot(busySlots, new Date());
+    }
 
     const steps: Array<() => void> = [
       () => { setAiProcStep(0); if (user) assignBooking(id, user.id);
               aiTimers.current.push(setTimeout(() => toast.success(`Lead accepted — ${target.patientName} assigned to you ✓`), 900)); },
       () => { setAiProcStep(1); updateStatus(id, "Lead - Step 2: Profile Completed");
               aiTimers.current.push(setTimeout(() => toast.success("Profile complete — all documents verified ✓"), 900)); },
-      () => { setAiProcStep(2); updateBooking(id, { status: "Awaiting Hospital Response", hospitalId: AI_TARGET_HOSPITAL_ID });
-              aiTimers.current.push(setTimeout(() => toast(`📋 Sent to ${targetHospital?.name ?? "the clinic"} — waiting for clinical approval. Final cost will be confirmed once the clinic reviews the case.`), 900)); },
+      () => {
+        setAiProcStep(2);
+        updateBooking(id, {
+          status: "Awaiting Hospital Response",
+          hospitalId: AI_TARGET_HOSPITAL_ID,
+          doctorId: bestDoctor?.id,
+          hospitalResponse: suggestedSlot
+            ? {
+                status: "proposed",
+                confirmedDate: suggestedSlot.date,
+                confirmedTime: suggestedSlot.time,
+                message: `AI suggested ${bestDoctor?.name} — ${format(new Date(suggestedSlot.date), "MMM d")} at ${suggestedSlot.time}.`,
+              }
+            : undefined,
+        });
+        const slotText = suggestedSlot
+          ? ` ${bestDoctor?.name} suggested for ${format(new Date(suggestedSlot.date), "MMM d")} at ${suggestedSlot.time}.`
+          : "";
+        aiTimers.current.push(setTimeout(() => toast(`📋 Sent to ${targetHospital?.name ?? "the clinic"} —${slotText} Awaiting clinical approval. Final cost will be confirmed once the clinic reviews the case.`), 900));
+      },
     ];
 
     steps.forEach((fn, idx) => {

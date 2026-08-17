@@ -11,7 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import {
   Mail, Phone, MapPin, CalendarDays, Banknote, StickyNote,
   AlertTriangle, CheckCircle2, XCircle, HelpCircle, Video, Copy, Stethoscope,
-  CalendarClock, FileText, Loader2,
+  CalendarClock, FileText, Loader2, Sparkles,
 } from "lucide-react";
 import { toast } from "sonner";
 import emailjs from "@emailjs/browser";
@@ -19,23 +19,13 @@ import { EMAILJS_CONFIG, isEmailJSConfigured } from "@/lib/emailjs";
 import { cn } from "@/lib/utils";
 import {
   CONSULTATION_SLOTS, getDoctorBusySlots, getFreeTimesForDate,
-  hasFreeSlotInRange, findNextFreeSlot, whoIsBusy,
+  hasFreeSlotInRange, findNextFreeSlot, whoIsBusy, sortDoctorsBySpecialtyMatch,
 } from "@/lib/doctorAvailability";
 import { createConsultationRoomUrl, isRealConsultationRoom } from "@/lib/videoCall";
 
 interface ClinicPatientDrawerProps {
   booking: BookingRequest | null;
   onClose: () => void;
-}
-
-// Rough category → specialty keyword match, just to suggest the most relevant
-// doctor first — the clinic can still pick anyone on staff.
-function specialtyMatchScore(procedureCategory: string, doctorSpecialty: string): number {
-  const a = procedureCategory.toLowerCase();
-  const b = doctorSpecialty.toLowerCase();
-  if (a === b) return 2;
-  if (a.includes(b) || b.includes(a)) return 1;
-  return 0;
 }
 
 export function ClinicPatientDrawer({ booking, onClose }: ClinicPatientDrawerProps) {
@@ -59,6 +49,23 @@ export function ClinicPatientDrawer({ booking, onClose }: ClinicPatientDrawerPro
     if (showMoreInfo) moreInfoFormRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" });
   }, [showMoreInfo]);
 
+  // AI pre-fills a suggested doctor + slot (hospitalResponse.status === "proposed")
+  // when it hands a lead to the clinic — load it in as the starting point here,
+  // the clinic can review and change anything before confirming.
+  useEffect(() => {
+    if (
+      booking &&
+      !booking.consultationLink &&
+      booking.hospitalResponse?.status === "proposed" &&
+      booking.hospitalResponse.confirmedDate &&
+      booking.hospitalResponse.confirmedTime
+    ) {
+      setSelectedDate(booking.hospitalResponse.confirmedDate);
+      setSelectedTime(booking.hospitalResponse.confirmedTime);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [booking?.id]);
+
   const procedure = booking ? procedures.find((p) => p.id === booking.procedureId) : undefined;
   const hospital = booking ? hospitals.find((h) => h.id === booking.hospitalId) : undefined;
 
@@ -66,9 +73,7 @@ export function ClinicPatientDrawer({ booking, onClose }: ClinicPatientDrawerPro
     if (!booking) return [];
     const list = mockDoctors.filter((d) => d.hospitalId === booking.hospitalId);
     if (!procedure) return list;
-    return [...list].sort(
-      (a, b) => specialtyMatchScore(procedure.category, b.specialty) - specialtyMatchScore(procedure.category, a.specialty)
-    );
+    return sortDoctorsBySpecialtyMatch(list, procedure.category);
   }, [booking, procedure]);
 
   const doctorId = selectedDoctorId || booking?.doctorId || clinicDoctors[0]?.id || "";
@@ -357,6 +362,13 @@ export function ClinicPatientDrawer({ booking, onClose }: ClinicPatientDrawerPro
           {/* Doctor & Availability */}
           <div className="bg-white rounded-xl border border-slate-200 p-5 shadow-sm space-y-4">
             <p className="text-[11px] font-semibold text-slate-400 uppercase tracking-wide">Doctor &amp; Availability</p>
+
+            {booking.hospitalResponse?.status === "proposed" && !alreadyScheduled && (
+              <div className="flex items-start gap-2 bg-violet-50 border border-violet-100 rounded-lg px-3 py-2.5 text-[12.5px] text-violet-700">
+                <Sparkles className="h-3.5 w-3.5 shrink-0 mt-0.5" />
+                <span>AI pre-selected this doctor and slot based on the request — review and confirm, or change anything below.</span>
+              </div>
+            )}
 
             <Select value={doctorId} onValueChange={(v) => { setSelectedDoctorId(v); setSelectedTime(""); }}>
               <SelectTrigger className="w-full">

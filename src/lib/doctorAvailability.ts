@@ -1,5 +1,5 @@
 import { addDays, format } from "date-fns";
-import type { BookingRequest } from "@/data/mockData";
+import type { BookingRequest, Doctor } from "@/data/mockData";
 
 export const CONSULTATION_SLOTS = ["09:00", "10:00", "11:00", "14:00", "15:00", "16:00", "17:00"];
 const DEFAULT_DURATION_MIN = 60;
@@ -61,6 +61,26 @@ export function getFreeTimesForDate(
   return timeOptions.filter((t) => isSlotFree(slots, date, t, durationMin));
 }
 
+// First free date+time within a specific range (e.g. the patient's requested
+// window) — null if the doctor has nothing open in it.
+export function findFirstFreeSlotInRange(
+  slots: BusySlot[],
+  rangeStart: string,
+  rangeEnd: string,
+  timeOptions: string[] = CONSULTATION_SLOTS,
+  durationMin = DEFAULT_DURATION_MIN
+): { date: string; time: string } | null {
+  let d = new Date(rangeStart);
+  const end = new Date(rangeEnd);
+  while (d <= end) {
+    const dateStr = format(d, "yyyy-MM-dd");
+    const free = getFreeTimesForDate(slots, dateStr, timeOptions, durationMin);
+    if (free.length > 0) return { date: dateStr, time: free[0] };
+    d = addDays(d, 1);
+  }
+  return null;
+}
+
 // Does the doctor have at least one free slot anywhere in the patient's requested date range?
 export function hasFreeSlotInRange(
   slots: BusySlot[],
@@ -69,14 +89,7 @@ export function hasFreeSlotInRange(
   timeOptions: string[] = CONSULTATION_SLOTS,
   durationMin = DEFAULT_DURATION_MIN
 ): boolean {
-  let d = new Date(rangeStart);
-  const end = new Date(rangeEnd);
-  while (d <= end) {
-    const dateStr = format(d, "yyyy-MM-dd");
-    if (getFreeTimesForDate(slots, dateStr, timeOptions, durationMin).length > 0) return true;
-    d = addDays(d, 1);
-  }
-  return false;
+  return findFirstFreeSlotInRange(slots, rangeStart, rangeEnd, timeOptions, durationMin) !== null;
 }
 
 // First free date+time from a starting point — used to tell the clinic "next available" when
@@ -96,4 +109,24 @@ export function findNextFreeSlot(
     }
   }
   return null;
+}
+
+// Rough category → specialty keyword match, to suggest the most relevant
+// doctor first. Not a hard filter — clinics can still pick anyone on staff.
+export function specialtyMatchScore(procedureCategory: string, doctorSpecialty: string): number {
+  const a = procedureCategory.toLowerCase();
+  const b = doctorSpecialty.toLowerCase();
+  if (a === b) return 2;
+  if (a.includes(b) || b.includes(a)) return 1;
+  return 0;
+}
+
+export function sortDoctorsBySpecialtyMatch(doctors: Doctor[], procedureCategory: string): Doctor[] {
+  return [...doctors].sort(
+    (a, b) => specialtyMatchScore(procedureCategory, b.specialty) - specialtyMatchScore(procedureCategory, a.specialty)
+  );
+}
+
+export function pickBestDoctor(doctors: Doctor[], procedureCategory: string): Doctor | undefined {
+  return sortDoctorsBySpecialtyMatch(doctors, procedureCategory)[0];
 }

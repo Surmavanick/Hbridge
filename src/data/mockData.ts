@@ -101,7 +101,8 @@ export interface BookingRequest {
     confirmedDate?: string;
     confirmedTime?: string;
     message?: string;
-    status: "accepted" | "rejected" | "pending" | "more_info";
+    // "proposed" = AI-suggested doctor/slot awaiting clinic review, not yet confirmed.
+    status: "accepted" | "rejected" | "pending" | "more_info" | "proposed";
   };
   doctorId?: string;
   sessions?: BookingSession[];

@@ -65,6 +65,33 @@ export function PatientDrawer({ booking, onClose }: PatientDrawerProps) {
   const hospital = hospitals.find((h) => h.id === booking.hospitalId);
   const doctor = mockDoctors.find((d) => d.id === booking.doctorId);
 
+  // Required/optional docs cross-referenced against what's actually uploaded,
+  // so a document the patient never provided shows up as "Missing", not just omitted.
+  const docChecklist = (() => {
+    const required = proc?.requiredDocuments ?? [];
+    const optional = proc?.optionalDocuments ?? [];
+    const known = new Set([...required, ...optional]);
+    const rows: { type: string; required: boolean; file: (typeof booking.uploadedFiles)[number] | null }[] = [];
+
+    for (const type of required) {
+      rows.push({ type, required: true, file: booking.uploadedFiles.find((f) => f.type === type) ?? null });
+    }
+    for (const type of optional) {
+      rows.push({ type, required: false, file: booking.uploadedFiles.find((f) => f.type === type) ?? null });
+    }
+    for (const file of booking.uploadedFiles) {
+      if (!known.has(file.type)) rows.push({ type: file.type, required: false, file });
+    }
+
+    const missingRequired = required.filter((type) => !booking.uploadedFiles.some((f) => f.type === type));
+    return {
+      rows,
+      requiredCount: required.length,
+      uploadedRequiredCount: required.length - missingRequired.length,
+      missingRequired,
+    };
+  })();
+
   // Doctors filtered by selected clinic (or current hospital)
   const clinicForDoctors = selectedClinic || booking.hospitalId || "";
   const availableDoctors = mockDoctors.filter((d) => d.hospitalId === clinicForDoctors);
@@ -313,15 +340,34 @@ export function PatientDrawer({ booking, onClose }: PatientDrawerProps) {
               {/* Documents */}
               <div className="bg-white rounded-xl border border-slate-200 p-5 shadow-sm">
                 <div className="flex items-center justify-between mb-4">
-                  <h4 className="text-xs font-bold uppercase tracking-wider text-slate-400">Uploaded Documents</h4>
-                  <Badge variant="secondary">{booking.uploadedFiles.length}</Badge>
+                  <h4 className="text-xs font-bold uppercase tracking-wider text-slate-400">Documents</h4>
+                  <Badge variant={docChecklist.missingRequired.length > 0 ? "destructive" : "secondary"}>
+                    {docChecklist.uploadedRequiredCount}/{docChecklist.requiredCount} required
+                  </Badge>
                 </div>
-                {booking.uploadedFiles.length > 0 ? (
+                {docChecklist.rows.length > 0 ? (
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    {booking.uploadedFiles.map((file, i) => {
-                      const mismatch = file.verified === false;
+                    {docChecklist.rows.map((row, i) => {
+                      if (!row.file) {
+                        return (
+                          <div key={i} className={`flex items-center gap-3 p-3 border rounded-lg ${
+                            row.required ? "border-red-200 bg-red-50" : "border-dashed border-slate-200"
+                          }`}>
+                            <div className={`w-8 h-8 rounded flex items-center justify-center shrink-0 ${row.required ? "bg-red-100" : "bg-slate-100"}`}>
+                              <AlertTriangle className={`h-4 w-4 ${row.required ? "text-red-500" : "text-slate-300"}`} />
+                            </div>
+                            <div className="min-w-0">
+                              <p className={`text-sm font-medium truncate ${row.required ? "text-red-700" : "text-slate-400"}`}>{row.type}</p>
+                              <p className={`text-[10px] ${row.required ? "text-red-500" : "text-slate-400"}`}>
+                                {row.required ? "Missing" : "Optional — not uploaded"}
+                              </p>
+                            </div>
+                          </div>
+                        );
+                      }
+                      const mismatch = row.file.verified === false;
                       return (
-                        <button key={i} onClick={() => handleDownload(file)}
+                        <button key={i} onClick={() => handleDownload(row.file!)}
                           className={`flex items-center justify-between p-3 border rounded-lg transition-colors group cursor-pointer w-full text-left ${
                             mismatch
                               ? "border-red-200 bg-red-50 hover:border-red-300 hover:bg-red-100/60"
@@ -334,10 +380,10 @@ export function PatientDrawer({ booking, onClose }: PatientDrawerProps) {
                                 : <FileText className="h-4 w-4 text-primary" />}
                             </div>
                             <div className="min-w-0">
-                              <p className={`text-sm font-medium truncate ${mismatch ? "text-red-700" : "text-slate-700"}`}>{file.type}</p>
-                              <p className="text-[10px] text-slate-400 truncate">{file.name}</p>
-                              {mismatch && file.verifyReason && (
-                                <p className="text-[10px] text-red-500 mt-0.5">⚠ {file.verifyReason}</p>
+                              <p className={`text-sm font-medium truncate ${mismatch ? "text-red-700" : "text-slate-700"}`}>{row.type}</p>
+                              <p className="text-[10px] text-slate-400 truncate">{row.file.name}</p>
+                              {mismatch && row.file.verifyReason && (
+                                <p className="text-[10px] text-red-500 mt-0.5">⚠ {row.file.verifyReason}</p>
                               )}
                             </div>
                           </div>
