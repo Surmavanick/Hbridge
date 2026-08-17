@@ -5,7 +5,7 @@
 // Fails open: any technical failure (download, parsing, OpenAI error) results
 // in `valid: true, skipped: true` rather than blocking the patient's upload.
 
-import { PDFParse } from "pdf-parse";
+import { extractText } from "unpdf";
 
 export default async function handler(req, res) {
   if (req.method !== "POST") {
@@ -27,9 +27,10 @@ export default async function handler(req, res) {
 
   let text = "";
   try {
-    const parser = new PDFParse({ url });
-    const result = await parser.getText();
-    await parser.destroy();
+    const fileRes = await fetch(url);
+    if (!fileRes.ok) throw new Error(`download_${fileRes.status}`);
+    const buffer = new Uint8Array(await fileRes.arrayBuffer());
+    const result = await extractText(buffer, { mergePages: true });
     text = (result.text || "").trim();
   } catch {
     res.status(200).json({ valid: true, skipped: true, reason: "Could not read the PDF; accepted without automated review." });
