@@ -3,15 +3,17 @@ import { BookingRequest, BookingSession, BookingStatus, hospitals, mockDoctors, 
 import { useBookings } from "@/store/bookingStore";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Calendar as CalendarComponent } from "@/components/ui/calendar";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Calendar, Clock, MapPin, Stethoscope, FileText, ArrowRight, MessageSquare, Download, Plus, Trash2, Search, Check, Building2, X as XIcon, ChevronRight, Video, Copy, AlertTriangle } from "lucide-react";
 import { format } from "date-fns";
+import { cn } from "@/lib/utils";
 
 const ALL_STATUSES: BookingStatus[] = [
   "Lead - Step 1: Awaiting Email Verification",
@@ -549,60 +551,105 @@ export function PatientDrawer({ booking, onClose }: PatientDrawerProps) {
 
       {/* ── Manage Schedule Dialog ── */}
       <Dialog open={scheduleOpen} onOpenChange={setScheduleOpen}>
-        <DialogContent className="sm:max-w-lg">
+        <DialogContent className="sm:max-w-xl">
           <DialogHeader><DialogTitle>Manage Schedule</DialogTitle></DialogHeader>
-          <ScrollArea className="max-h-[50vh] pr-2">
-            <div className="space-y-2 mb-4">
+          <ScrollArea className="max-h-[60vh] pr-3 -mr-3">
+            <div className="space-y-2 mb-5">
               {(booking.sessions || []).length === 0 && (
-                <p className="text-sm text-slate-400 text-center py-2">No sessions yet.</p>
-              )}
-              {(booking.sessions || []).map((s, i) => (
-                <div key={i} className="flex items-center justify-between p-3 border border-slate-200 rounded-lg">
-                  <div>
-                    <p className="text-sm font-semibold text-slate-800">{s.title}</p>
-                    <p className="text-xs text-slate-500">{s.date} · {s.time} · {s.durationMin}min {s.location ? `· ${s.location}` : ""}</p>
-                  </div>
-                  <Button variant="ghost" size="icon" className="h-7 w-7 text-slate-400 hover:text-red-500"
-                    onClick={() => handleDeleteSession(i)}>
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
+                <div className="bg-slate-50 border border-dashed border-slate-200 rounded-xl py-6 text-center">
+                  <Calendar className="h-6 w-6 text-slate-300 mx-auto mb-1.5" />
+                  <p className="text-sm text-slate-400">No sessions yet.</p>
                 </div>
-              ))}
+              )}
+              {(booking.sessions || [])
+                .map((s, originalIndex) => ({ s, originalIndex }))
+                .sort((a, b) => (a.s.date + a.s.time).localeCompare(b.s.date + b.s.time))
+                .map(({ s, originalIndex }) => {
+                  const isPast = new Date(`${s.date}T${s.time}`) < new Date();
+                  return (
+                    <div key={originalIndex} className={cn(
+                      "flex items-center gap-3 p-3 rounded-xl border transition-colors",
+                      isPast ? "border-slate-200 bg-slate-50/60 opacity-70" : "border-primary/20 bg-primary/[0.02]"
+                    )}>
+                      <div className={cn(
+                        "w-9 h-9 rounded-lg flex items-center justify-center shrink-0",
+                        isPast ? "bg-slate-100 text-slate-400" : "bg-primary/10 text-primary"
+                      )}>
+                        <Calendar className="h-4 w-4" />
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <p className="text-sm font-semibold text-slate-800 truncate">{s.title}</p>
+                        <p className="text-xs text-slate-500 flex flex-wrap items-center gap-x-2.5 gap-y-0.5 mt-0.5">
+                          <span className="flex items-center gap-1"><Calendar className="h-3 w-3" /> {format(new Date(s.date), "EEE, MMM d")}</span>
+                          <span className="flex items-center gap-1"><Clock className="h-3 w-3" /> {s.time} · {s.durationMin}m</span>
+                          {s.location && <span className="flex items-center gap-1 truncate"><MapPin className="h-3 w-3 shrink-0" /> {s.location}</span>}
+                        </p>
+                      </div>
+                      <Button variant="ghost" size="icon" className="h-7 w-7 text-slate-400 hover:text-red-500 shrink-0"
+                        onClick={() => handleDeleteSession(originalIndex)}>
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  );
+                })}
             </div>
 
-            <Separator className="my-3" />
-            <p className="text-xs font-bold uppercase text-slate-400 mb-3">Add Session</p>
-            <div className="grid grid-cols-2 gap-3">
-              <div className="col-span-2">
-                <Label className="text-xs">Title</Label>
-                <Input placeholder="e.g. Consultation" value={newSession.title}
-                  onChange={(e) => setNewSession((p) => ({ ...p, title: e.target.value }))} />
+            <div className="bg-slate-50 border border-slate-200 rounded-xl p-4">
+              <p className="text-xs font-bold uppercase text-slate-400 mb-3 flex items-center gap-1.5">
+                <Plus className="h-3.5 w-3.5" /> Add Session
+              </p>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="col-span-2">
+                  <Label className="text-xs">Title</Label>
+                  <Input className="bg-white" placeholder="e.g. Consultation" value={newSession.title}
+                    onChange={(e) => setNewSession((p) => ({ ...p, title: e.target.value }))} />
+                </div>
+                <div>
+                  <Label className="text-xs">Date</Label>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button variant="outline" className={cn(
+                        "w-full justify-start text-left font-normal bg-white",
+                        !newSession.date && "text-muted-foreground"
+                      )}>
+                        <Calendar className="mr-2 h-4 w-4 shrink-0" />
+                        <span className="truncate">{newSession.date ? format(new Date(newSession.date), "MMM d, yyyy") : "Pick a date"}</span>
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0" align="start">
+                      <CalendarComponent
+                        mode="single"
+                        selected={newSession.date ? new Date(newSession.date) : undefined}
+                        onSelect={(d) => d && setNewSession((p) => ({ ...p, date: format(d, "yyyy-MM-dd") }))}
+                        initialFocus
+                      />
+                    </PopoverContent>
+                  </Popover>
+                </div>
+                <div>
+                  <Label className="text-xs">Time</Label>
+                  <div className="relative">
+                    <Clock className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400 pointer-events-none" />
+                    <Input type="time" className="bg-white pl-9" value={newSession.time}
+                      onChange={(e) => setNewSession((p) => ({ ...p, time: e.target.value }))} />
+                  </div>
+                </div>
+                <div>
+                  <Label className="text-xs">Duration (min)</Label>
+                  <Input className="bg-white" type="number" value={newSession.durationMin}
+                    onChange={(e) => setNewSession((p) => ({ ...p, durationMin: Number(e.target.value) }))} />
+                </div>
+                <div>
+                  <Label className="text-xs">Location</Label>
+                  <Input className="bg-white" placeholder="Room / address" value={newSession.location}
+                    onChange={(e) => setNewSession((p) => ({ ...p, location: e.target.value }))} />
+                </div>
               </div>
-              <div>
-                <Label className="text-xs">Date</Label>
-                <Input type="date" value={newSession.date}
-                  onChange={(e) => setNewSession((p) => ({ ...p, date: e.target.value }))} />
-              </div>
-              <div>
-                <Label className="text-xs">Time</Label>
-                <Input type="time" value={newSession.time}
-                  onChange={(e) => setNewSession((p) => ({ ...p, time: e.target.value }))} />
-              </div>
-              <div>
-                <Label className="text-xs">Duration (min)</Label>
-                <Input type="number" value={newSession.durationMin}
-                  onChange={(e) => setNewSession((p) => ({ ...p, durationMin: Number(e.target.value) }))} />
-              </div>
-              <div>
-                <Label className="text-xs">Location</Label>
-                <Input placeholder="Room / address" value={newSession.location}
-                  onChange={(e) => setNewSession((p) => ({ ...p, location: e.target.value }))} />
-              </div>
+              <Button className="mt-3 w-full" size="sm" onClick={handleAddSession}
+                disabled={!newSession.title || !newSession.date}>
+                <Plus className="h-4 w-4 mr-1" /> Add Session
+              </Button>
             </div>
-            <Button className="mt-3 w-full" size="sm" onClick={handleAddSession}
-              disabled={!newSession.title || !newSession.date}>
-              <Plus className="h-4 w-4 mr-1" /> Add Session
-            </Button>
           </ScrollArea>
           <DialogFooter>
             <Button onClick={() => setScheduleOpen(false)}>Done</Button>
