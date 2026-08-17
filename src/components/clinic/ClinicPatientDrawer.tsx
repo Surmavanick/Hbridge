@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { format, addDays, startOfDay } from "date-fns";
-import type { BookingRequest } from "@/data/mockData";
+import type { BookingRequest, BookingSession } from "@/data/mockData";
 import { procedures, hospitals, mockDoctors } from "@/data/mockData";
 import { useBookings } from "@/store/bookingStore";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
@@ -129,6 +129,19 @@ export function ClinicPatientDrawer({ booking, onClose }: ClinicPatientDrawerPro
     const scheduledAt = `${activeDate}T${selectedTime}:00`;
     const consultationLink = doctor.meetLink ?? `https://meet.google.com/hb-${booking!.hospitalId}-room`;
 
+    // Master Schedule (partner/admin) reads from `sessions`, not consultationScheduledAt —
+    // keep them in sync so a clinic-confirmed consultation actually shows up there.
+    const consultationSession: BookingSession = {
+      date: activeDate,
+      time: selectedTime,
+      durationMin: 60,
+      title: "Consultation",
+      doctorId: doctor.id,
+      hospitalId: booking!.hospitalId!,
+      location: hospital?.address,
+    };
+    const otherSessions = (booking!.sessions ?? []).filter((s) => s.title !== "Consultation");
+
     updateBooking(booking!.id, {
       doctorId: doctor.id,
       consultationLink,
@@ -140,6 +153,7 @@ export function ClinicPatientDrawer({ booking, onClose }: ClinicPatientDrawerPro
         confirmedTime: selectedTime,
         message: alreadyScheduled ? "Rescheduled by clinic." : "Confirmed by clinic.",
       },
+      sessions: [...otherSessions, consultationSession],
     });
 
     const consultationDate = format(new Date(scheduledAt), "EEEE, MMMM d 'at' HH:mm");

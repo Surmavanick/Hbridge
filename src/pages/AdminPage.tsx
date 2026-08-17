@@ -140,7 +140,7 @@ function MobileScheduleRow({ booking, dateStr, onOpenPatient }: { booking: Booki
 export default function AdminPage() {
   const { bookings, updateStatus, updateBooking, assignBooking, addBooking } = useBookings();
   const { user, userReferralCode } = useAuth();
-  const [currentDate, setCurrentDate] = useState<Date>(new Date("2026-03-12T00:00:00"));
+  const [currentDate, setCurrentDate] = useState<Date>(() => new Date());
   const [searchQuery, setSearchQuery] = useState("");
   const [activeTab, setActiveTab] = useState("pipeline");
   const [revPeriod, setRevPeriod] = useState<"3M"|"6M"|"1Y">("6M");
@@ -638,7 +638,7 @@ export default function AdminPage() {
               <div className="bg-white rounded-2xl shadow-sm border border-slate-200 flex-1 flex items-center justify-center text-slate-400 flex-col gap-3 min-h-[220px]">
                 <CalendarIcon className="h-10 w-10 opacity-20" />
                 <p className="text-sm font-medium">No schedule items for {format(currentDate, "MMMM d")}</p>
-                <Button variant="outline" size="sm" onClick={() => setCurrentDate(new Date("2026-03-12T00:00:00"))}>Reset to Mar 12</Button>
+                <Button variant="outline" size="sm" onClick={() => setCurrentDate(new Date())}>Reset to Today</Button>
               </div>
             )}
           </TabsContent>
