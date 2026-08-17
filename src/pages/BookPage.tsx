@@ -9,14 +9,15 @@ import { Calendar } from "@/components/ui/calendar";
 import { Card, CardContent } from "@/components/ui/card";
 import { format, addDays } from "date-fns";
 import { cn } from "@/lib/utils";
-import { countries, procedures, type BookingRequest } from "@/data/mockData";
-import { CalendarIcon, Upload, CheckCircle, ArrowLeft, ArrowRight, FileText, X, ChevronLeft, ChevronRight, AlertTriangle, Info } from "lucide-react";
+import { countries, procedures, type BookingRequest, type UploadedDocument } from "@/data/mockData";
+import { CalendarIcon, Upload, CheckCircle, ArrowLeft, ArrowRight, FileText, X, ChevronLeft, ChevronRight, AlertTriangle, Info, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import emailjs from "@emailjs/browser";
 import { EMAILJS_CONFIG, isEmailJSConfigured } from "@/lib/emailjs";
 import { useBookings } from "@/store/bookingStore";
 import { useAuth } from "@/store/authStore";
 import { supabase } from "@/lib/supabase";
+import { verifyDocument } from "@/lib/documentVerification";
 
 export default function BookPage() {
   const [params] = useSearchParams();
@@ -42,7 +43,7 @@ export default function BookPage() {
   const [budget, setBudget] = useState("");
 
   // Step 2
-  const [files, setFiles] = useState<{ name: string; type: string; url: string }[]>([]);
+  const [files, setFiles] = useState<(UploadedDocument & { verifying?: boolean })[]>([]);
   const [notes, setNotes] = useState("");
   const [uploadingDoc, setUploadingDoc] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -125,16 +126,48 @@ export default function BookPage() {
       return;
     }
     const { data } = supabase.storage.from("documents").getPublicUrl(filePath);
+    const docType = uploadingDoc;
+    const isPdf = file.type === "application/pdf" || ext.toLowerCase() === "pdf";
     setFiles((prev) => {
-      const filtered = prev.filter((f) => f.type !== uploadingDoc);
-      return [...filtered, { name: file.name, type: uploadingDoc, url: data.publicUrl }];
+      const filtered = prev.filter((f) => f.type !== docType);
+      return [...filtered, { name: file.name, type: docType, url: data.publicUrl, verifying: isPdf }];
     });
-    toast.success(`${uploadingDoc} uploaded successfully`);
+    toast.success(`${docType} uploaded successfully`);
     setUploadingDoc(null);
+
+    if (isPdf) {
+      const result = await verifyDocument(data.publicUrl, docType);
+      setFiles((prev) =>
+        prev.map((f) =>
+          f.type === docType && f.url === data.publicUrl
+            ? { ...f, verifying: false, verified: result.valid, verifyReason: result.reason, verifySkipped: result.skipped }
+            : f
+        )
+      );
+      if (result.valid === false) {
+        toast.error(`${docType}: ${result.reason || "This document doesn't look right — please double-check it."}`);
+      }
+    }
   };
 
   const removeFile = (index: number) => {
     setFiles((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  type UploadedFileState = (typeof files)[number];
+
+  const docCardClass = (uploadedFile: UploadedFileState | undefined, dashedWhenEmpty: boolean) => {
+    if (!uploadedFile) return dashedWhenEmpty ? "border-border border-dashed" : "border-border";
+    if (uploadedFile.verifying) return "bg-blue-50/50 border-blue-200";
+    if (uploadedFile.verified === false) return "bg-destructive/5 border-destructive/30";
+    return "bg-trust/5 border-trust/20";
+  };
+
+  const docStatusIcon = (uploadedFile: UploadedFileState | undefined) => {
+    if (!uploadedFile) return null;
+    if (uploadedFile.verifying) return <Loader2 className="h-4 w-4 text-blue-500 shrink-0 animate-spin" />;
+    if (uploadedFile.verified === false) return <AlertTriangle className="h-4 w-4 text-destructive shrink-0" />;
+    return <CheckCircle className="h-4 w-4 text-trust shrink-0" />;
   };
 
   const canProceedStep1 = country && procedureId && dateRange.from && dateRange.to && name && email && phone;
@@ -167,7 +200,14 @@ export default function BookPage() {
       status: "Lead - Step 1: Awaiting Email Verification",
       preferredDateStart: dateRange.from ? format(dateRange.from, "yyyy-MM-dd") : "",
       preferredDateEnd: dateRange.to ? format(dateRange.to, "yyyy-MM-dd") : "",
-      uploadedFiles: files.map((f) => ({ name: f.name, type: f.type, url: f.url })),
+      uploadedFiles: files.map((f) => ({
+        name: f.name,
+        type: f.type,
+        url: f.url,
+        verified: f.verified,
+        verifyReason: f.verifyReason,
+        verifySkipped: f.verifySkipped,
+      })),
       notes,
       createdAt: new Date().toISOString(),
       referralCode: referralCode.trim() || undefined,
@@ -503,23 +543,30 @@ export default function BookPage() {
                   {selectedProcedure.requiredDocuments.map((doc) => {
                     const uploadedFile = files.find((f) => f.type === doc);
                     return (
-                      <div key={doc} className={cn("flex items-center justify-between p-3 rounded-lg border", uploadedFile ? "bg-trust/5 border-trust/20" : "border-border")}>
-                        <span className="text-sm font-medium flex items-center gap-2 min-w-0">
-                          <FileText className="h-4 w-4 text-muted-foreground shrink-0" />
-                          <span className="truncate">{doc}</span>
-                          {uploadedFile && <CheckCircle className="h-4 w-4 text-trust shrink-0" />}
-                        </span>
-                        {!uploadedFile ? (
-                          <Button size="sm" variant="outline" onClick={() => handleFileUpload(doc)} className="gap-1 shrink-0 ml-2">
-                            <Upload className="h-3.5 w-3.5" /> Upload
-                          </Button>
-                        ) : (
-                          <div className="flex items-center gap-2 shrink-0 ml-2">
-                            <span className="text-xs text-muted-foreground truncate max-w-[120px]" title={uploadedFile.name}>{uploadedFile.name}</span>
-                            <button onClick={() => removeFile(files.indexOf(uploadedFile))} className="text-muted-foreground hover:text-destructive">
-                              <X className="h-4 w-4" />
-                            </button>
-                          </div>
+                      <div key={doc} className={cn("p-3 rounded-lg border", docCardClass(uploadedFile, false))}>
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm font-medium flex items-center gap-2 min-w-0">
+                            <FileText className="h-4 w-4 text-muted-foreground shrink-0" />
+                            <span className="truncate">{doc}</span>
+                            {docStatusIcon(uploadedFile)}
+                          </span>
+                          {!uploadedFile ? (
+                            <Button size="sm" variant="outline" onClick={() => handleFileUpload(doc)} className="gap-1 shrink-0 ml-2">
+                              <Upload className="h-3.5 w-3.5" /> Upload
+                            </Button>
+                          ) : (
+                            <div className="flex items-center gap-2 shrink-0 ml-2">
+                              <span className="text-xs text-muted-foreground truncate max-w-[120px]" title={uploadedFile.name}>{uploadedFile.name}</span>
+                              <button onClick={() => removeFile(files.indexOf(uploadedFile))} className="text-muted-foreground hover:text-destructive">
+                                <X className="h-4 w-4" />
+                              </button>
+                            </div>
+                          )}
+                        </div>
+                        {uploadedFile?.verified === false && (
+                          <p className="text-xs text-destructive mt-2">
+                            ⚠ {uploadedFile.verifyReason || "This document doesn't look like it matches — please re-check and re-upload."}
+                          </p>
                         )}
                       </div>
                     );
@@ -534,24 +581,31 @@ export default function BookPage() {
                     {selectedProcedure.optionalDocuments.map((doc) => {
                       const uploadedFile = files.find((f) => f.type === doc);
                       return (
-                        <div key={doc} className={cn("flex items-center justify-between p-3 rounded-lg border", uploadedFile ? "bg-trust/5 border-trust/20" : "border-border border-dashed")}>
-                          <span className="text-sm font-medium flex items-center gap-2 min-w-0">
-                            <FileText className="h-4 w-4 text-muted-foreground shrink-0" />
-                            <span className="truncate">{doc}</span>
-                            <span className="text-xs text-muted-foreground shrink-0">(optional)</span>
-                            {uploadedFile && <CheckCircle className="h-4 w-4 text-trust shrink-0" />}
-                          </span>
-                          {!uploadedFile ? (
-                            <Button size="sm" variant="ghost" onClick={() => handleFileUpload(doc)} className="gap-1 shrink-0 ml-2">
-                              <Upload className="h-3.5 w-3.5" /> Upload
-                            </Button>
-                          ) : (
-                            <div className="flex items-center gap-2 shrink-0 ml-2">
-                              <span className="text-xs text-muted-foreground truncate max-w-[120px]" title={uploadedFile.name}>{uploadedFile.name}</span>
-                              <button onClick={() => removeFile(files.indexOf(uploadedFile))} className="text-muted-foreground hover:text-destructive">
-                                <X className="h-4 w-4" />
-                              </button>
-                            </div>
+                        <div key={doc} className={cn("p-3 rounded-lg border", docCardClass(uploadedFile, true))}>
+                          <div className="flex items-center justify-between">
+                            <span className="text-sm font-medium flex items-center gap-2 min-w-0">
+                              <FileText className="h-4 w-4 text-muted-foreground shrink-0" />
+                              <span className="truncate">{doc}</span>
+                              <span className="text-xs text-muted-foreground shrink-0">(optional)</span>
+                              {docStatusIcon(uploadedFile)}
+                            </span>
+                            {!uploadedFile ? (
+                              <Button size="sm" variant="ghost" onClick={() => handleFileUpload(doc)} className="gap-1 shrink-0 ml-2">
+                                <Upload className="h-3.5 w-3.5" /> Upload
+                              </Button>
+                            ) : (
+                              <div className="flex items-center gap-2 shrink-0 ml-2">
+                                <span className="text-xs text-muted-foreground truncate max-w-[120px]" title={uploadedFile.name}>{uploadedFile.name}</span>
+                                <button onClick={() => removeFile(files.indexOf(uploadedFile))} className="text-muted-foreground hover:text-destructive">
+                                  <X className="h-4 w-4" />
+                                </button>
+                              </div>
+                            )}
+                          </div>
+                          {uploadedFile?.verified === false && (
+                            <p className="text-xs text-destructive mt-2">
+                              ⚠ {uploadedFile.verifyReason || "This document doesn't look like it matches — please re-check and re-upload."}
+                            </p>
                           )}
                         </div>
                       );

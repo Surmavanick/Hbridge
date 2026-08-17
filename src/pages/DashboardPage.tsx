@@ -245,7 +245,6 @@ export default function DashboardPage() {
                 const stepIndex = getStepIndex(booking.status);
                 const colors = getStatusColor(booking.status);
                 const isRejected = booking.status === "Rejected";
-                const uploadedTypes = booking.uploadedFiles.map((f) => f.type);
                 const requiredDocs = procedure?.requiredDocuments ?? [];
                 const optionalDocs = procedure?.optionalDocuments ?? [];
 
@@ -375,30 +374,48 @@ export default function DashboardPage() {
                         <p className="text-[12px] font-semibold text-slate-400 uppercase tracking-wide mb-2">Documentation</p>
                         <div className="space-y-1.5">
                           {requiredDocs.map((doc) => {
-                            const uploaded = uploadedTypes.includes(doc);
+                            const uploadedFile = booking.uploadedFiles.find((f) => f.type === doc);
+                            const uploaded = Boolean(uploadedFile);
+                            const mismatch = uploadedFile?.verified === false;
                             return (
-                              <div key={doc} className={`flex items-center gap-2.5 px-3 py-2 rounded-xl text-[13px] ${uploaded ? "bg-green-50 text-green-700" : "bg-slate-50 text-slate-500"}`}>
-                                {uploaded
-                                  ? <FileCheck className="h-4 w-4 text-green-500 flex-shrink-0" />
-                                  : <FileText className="h-4 w-4 text-slate-300 flex-shrink-0" />}
-                                <span className="flex-1">{doc}</span>
-                                <span className={`text-[11px] font-medium px-2 py-0.5 rounded-full ${uploaded ? "bg-green-100 text-green-600" : "bg-slate-100 text-slate-400"}`}>
-                                  {uploaded ? "Uploaded" : "Required"}
-                                </span>
+                              <div key={doc}>
+                                <div className={`flex items-center gap-2.5 px-3 py-2 rounded-xl text-[13px] ${mismatch ? "bg-red-50 text-red-700" : uploaded ? "bg-green-50 text-green-700" : "bg-slate-50 text-slate-500"}`}>
+                                  {mismatch
+                                    ? <AlertTriangle className="h-4 w-4 text-red-500 flex-shrink-0" />
+                                    : uploaded
+                                    ? <FileCheck className="h-4 w-4 text-green-500 flex-shrink-0" />
+                                    : <FileText className="h-4 w-4 text-slate-300 flex-shrink-0" />}
+                                  <span className="flex-1">{doc}</span>
+                                  <span className={`text-[11px] font-medium px-2 py-0.5 rounded-full ${mismatch ? "bg-red-100 text-red-600" : uploaded ? "bg-green-100 text-green-600" : "bg-slate-100 text-slate-400"}`}>
+                                    {mismatch ? "Mismatch" : uploaded ? "Uploaded" : "Required"}
+                                  </span>
+                                </div>
+                                {mismatch && uploadedFile?.verifyReason && (
+                                  <p className="text-[11px] text-red-500 px-3 pt-1">⚠ {uploadedFile.verifyReason}</p>
+                                )}
                               </div>
                             );
                           })}
                           {optionalDocs.map((doc) => {
-                            const uploaded = uploadedTypes.includes(doc);
+                            const uploadedFile = booking.uploadedFiles.find((f) => f.type === doc);
+                            const uploaded = Boolean(uploadedFile);
+                            const mismatch = uploadedFile?.verified === false;
                             return (
-                              <div key={doc} className={`flex items-center gap-2.5 px-3 py-2 rounded-xl text-[13px] ${uploaded ? "bg-green-50 text-green-700" : "bg-slate-50/60 text-slate-400"}`}>
-                                {uploaded
-                                  ? <FileCheck className="h-4 w-4 text-green-500 flex-shrink-0" />
-                                  : <FilePlus className="h-4 w-4 text-slate-300 flex-shrink-0" />}
-                                <span className="flex-1">{doc}</span>
-                                <span className={`text-[11px] font-medium px-2 py-0.5 rounded-full ${uploaded ? "bg-green-100 text-green-600" : "bg-slate-100 text-slate-400"}`}>
-                                  {uploaded ? "Uploaded" : "Optional"}
-                                </span>
+                              <div key={doc}>
+                                <div className={`flex items-center gap-2.5 px-3 py-2 rounded-xl text-[13px] ${mismatch ? "bg-red-50 text-red-700" : uploaded ? "bg-green-50 text-green-700" : "bg-slate-50/60 text-slate-400"}`}>
+                                  {mismatch
+                                    ? <AlertTriangle className="h-4 w-4 text-red-500 flex-shrink-0" />
+                                    : uploaded
+                                    ? <FileCheck className="h-4 w-4 text-green-500 flex-shrink-0" />
+                                    : <FilePlus className="h-4 w-4 text-slate-300 flex-shrink-0" />}
+                                  <span className="flex-1">{doc}</span>
+                                  <span className={`text-[11px] font-medium px-2 py-0.5 rounded-full ${mismatch ? "bg-red-100 text-red-600" : uploaded ? "bg-green-100 text-green-600" : "bg-slate-100 text-slate-400"}`}>
+                                    {mismatch ? "Mismatch" : uploaded ? "Uploaded" : "Optional"}
+                                  </span>
+                                </div>
+                                {mismatch && uploadedFile?.verifyReason && (
+                                  <p className="text-[11px] text-red-500 px-3 pt-1">⚠ {uploadedFile.verifyReason}</p>
+                                )}
                               </div>
                             );
                           })}

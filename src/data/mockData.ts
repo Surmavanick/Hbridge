@@ -72,6 +72,16 @@ export interface BookingSession {
   location?: string;   // address
 }
 
+export interface UploadedDocument {
+  name: string;
+  type: string;
+  url: string;
+  // AI content-verification result (PDFs only) — undefined means not yet checked.
+  verified?: boolean;
+  verifyReason?: string;
+  verifySkipped?: boolean;
+}
+
 export interface BookingRequest {
   id: string;
   patientName: string;
@@ -84,7 +94,7 @@ export interface BookingRequest {
   preferredDateStart: string;
   preferredDateEnd: string;
   status: BookingStatus;
-  uploadedFiles: { name: string; type: string; url: string }[];
+  uploadedFiles: UploadedDocument[];
   notes: string;
   createdAt: string;
   hospitalResponse?: {
