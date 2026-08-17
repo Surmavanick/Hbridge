@@ -767,7 +767,7 @@ export const mockBookings: BookingRequest[] = [
     ],
     notes: "Patient prefers morning appointments.", createdAt: "2026-03-05",
     hospitalResponse: { confirmedDate: "2026-03-12", confirmedTime: "10:00", message: "Patient accepted.", status: "accepted" },
-    referralCode: "HB-SOPIKO", assignedPartnerId: "partner-sopiko",
+    referralCode: "HB-PARTNER", assignedPartnerId: "partner-demo",
     sessions: [
       { date: "2026-03-12", time: "09:00", durationMin: 30, title: "Consultation", doctorId: "d1", hospitalId: "h2", location: "29 Tseretheli Ave, Room 201" },
       { date: "2026-03-12", time: "10:00", durationMin: 60, title: "Dental X-Ray & Prep", doctorId: "d1", hospitalId: "h2", location: "29 Tseretheli Ave, Imaging" },
@@ -801,7 +801,7 @@ export const mockBookings: BookingRequest[] = [
     status: "Lead - Step 1: Awaiting Email Verification",
     uploadedFiles: [{ name: "passport.pdf", type: "Passport", url: "#" }],
     notes: "Missing MRI and blood test results.", createdAt: "2026-03-08",
-    referralCode: "HB-SOPIKO", assignedPartnerId: "partner-sopiko",
+    referralCode: "HB-PARTNER", assignedPartnerId: "partner-demo",
     sessions: [
       { date: "2026-03-14", time: "15:30", durationMin: 30, title: "Initial Consultation", doctorId: "d3", hospitalId: "h1", location: "14 Tsinamdzghvrishvili St, Room 102" },
     ],
@@ -889,7 +889,7 @@ export const mockBookings: BookingRequest[] = [
     ],
     notes: "", createdAt: "2026-03-03",
     hospitalResponse: { confirmedDate: "2026-03-14", confirmedTime: "09:00", message: "Ready for surgery.", status: "accepted" },
-    referralCode: "HB-SOPIKO", assignedPartnerId: "partner-sopiko",
+    referralCode: "HB-PARTNER", assignedPartnerId: "partner-demo",
     sessions: [
       { date: "2026-03-14", time: "09:00", durationMin: 30, title: "Pre-Op Vitals", doctorId: "d2", hospitalId: "h2", location: "29 Tseretheli Ave, Prep Room" },
       { date: "2026-03-14", time: "13:00", durationMin: 120, title: "Rhinoplasty Surgery", doctorId: "d2", hospitalId: "h2", location: "29 Tseretheli Ave, OR-1" },
@@ -990,7 +990,7 @@ export const mockBookings: BookingRequest[] = [
     status: "Lead - Step 4: Travel Booked",
     uploadedFiles: [{ name: "passport.pdf", type: "Passport", url: "#" }],
     notes: "Patient needs to submit hormonal panel and ultrasound.", createdAt: "2026-03-09",
-    referralCode: "HB-SOPIKO", assignedPartnerId: "partner-sopiko",
+    referralCode: "HB-PARTNER", assignedPartnerId: "partner-demo",
     sessions: [
       { date: "2026-03-25", time: "10:00", durationMin: 60, title: "IVF Initial Consult (Pending)", doctorId: "d3", hospitalId: "h1", location: "14 Tsinamdzghvrishvili St, Fertility Wing" },
     ],

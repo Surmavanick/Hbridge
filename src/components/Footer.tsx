@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { Mail, Phone, MapPin } from "lucide-react";
+import { Mail, MapPin } from "lucide-react";
 import logo from "@/assets/logo.svg";
 
 export default function Footer() {
@@ -36,7 +36,6 @@ export default function Footer() {
             <h4 className="font-heading font-semibold mb-4">Contact</h4>
             <div className="flex flex-col gap-3 text-sm opacity-70">
               <span className="flex items-center gap-2"><Mail className="h-4 w-4" /> healtbridge@gmail.com</span>
-              <span className="flex items-center gap-2"><Phone className="h-4 w-4" /> +995 032 152 856</span>
               <span className="flex items-center gap-2"><MapPin className="h-4 w-4" /> Tbilisi, Georgia</span>
             </div>
           </div>

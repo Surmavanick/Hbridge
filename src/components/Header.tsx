@@ -52,7 +52,7 @@ export default function Header() {
   const location = useLocation();
   const navigate = useNavigate();
   const isMobile = useIsMobile();
-  const { user, login, logout, resetPassword, updateUser, changePassword, isSopikoPartner } = useAuth();
+  const { user, login, logout, resetPassword, updateUser, changePassword, isPartnerUser } = useAuth();
 
   const handleInlineLogin = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -170,7 +170,7 @@ export default function Header() {
               <Button size="sm">Book With Us</Button>
             </Link>
           )}
-          {isSopikoPartner && (
+          {isPartnerUser && (
             <Link to="/admin" className="hidden lg:block">
               <Button variant="outline" size="sm">Dashboard</Button>
             </Link>
@@ -398,7 +398,7 @@ export default function Header() {
                   <Button size="sm" className="w-full">Book With Us</Button>
                 </Link>
               )}
-              {isSopikoPartner && (
+              {isPartnerUser && (
                 <Link to="/admin" onClick={() => setOpen(false)} className="flex-1">
                   <Button variant="outline" size="sm" className="w-full">Dashboard</Button>
                 </Link>

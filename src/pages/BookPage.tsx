@@ -509,7 +509,7 @@ export default function BookPage() {
                 <Input
                   value={referralCode}
                   onChange={(e) => setReferralCode(e.target.value.toUpperCase())}
-                  placeholder="e.g. HB-SOPIKO"
+                  placeholder="e.g. HB-XXXXX"
                   className="uppercase placeholder:normal-case"
                 />
               </div>

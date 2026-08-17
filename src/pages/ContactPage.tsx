@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent } from "@/components/ui/card";
-import { Mail, Phone, MapPin, Send } from "lucide-react";
+import { Mail, MapPin, Send } from "lucide-react";
 import { toast } from "sonner";
 
 export default function ContactPage() {
@@ -28,13 +28,6 @@ export default function ContactPage() {
               <div>
                 <p className="text-sm font-medium text-foreground">Email</p>
                 <p className="text-sm text-muted-foreground">healtbridge@gmail.com</p>
-              </div>
-            </div>
-            <div className="flex items-center gap-3">
-              <div className="p-2 rounded-lg bg-primary/10 text-primary"><Phone className="h-5 w-5" /></div>
-              <div>
-                <p className="text-sm font-medium text-foreground">Phone</p>
-                <p className="text-sm text-muted-foreground">+995 032 152 856</p>
               </div>
             </div>
             <div className="flex items-center gap-3">

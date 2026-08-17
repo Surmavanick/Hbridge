@@ -28,7 +28,7 @@ interface AuthContextValue {
   register: (name: string, email: string, password: string) => boolean;
   updateUser: (updates: Partial<Pick<AuthUser, "name">>) => void;
   changePassword: (currentPassword: string, newPassword: string) => boolean;
-  isSopikoPartner: boolean;
+  isPartnerUser: boolean;
   getPartnerByReferralCode: (code: string) => { id: string; name: string } | null;
   userReferralCode: string | null;
   getClinicHospitalId: string | null;
@@ -44,16 +44,16 @@ const AUTH_STORAGE_KEY = "healthbridge_auth_user";
 const ACCOUNTS_STORAGE_KEY = "healthbridge_mock_accounts";
 
 // IDs that should be purged from localStorage (old demo accounts)
-const PURGE_ACCOUNT_IDS = new Set(["user-demo", "clinic-demo"]);
+const PURGE_ACCOUNT_IDS = new Set(["user-demo", "clinic-demo", "partner-sopiko"]);
 
 const defaultAccounts: DemoAccount[] = [
   {
-    id: "partner-sopiko",
-    name: "Sopiko Sergia",
-    email: "sopiko@healthbridge.com",
+    id: "partner-demo",
+    name: "Health Bridge Partner",
+    email: "partner@healthbridge.com",
     password: "partner123",
     role: "partner",
-    referralCode: "HB-SOPIKO",
+    referralCode: "HB-PARTNER",
   },
   {
     id: "clinic-hb",
@@ -231,7 +231,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       register,
       updateUser,
       changePassword,
-      isSopikoPartner: user?.role === "partner" && user.name === "Sopiko Sergia",
+      isPartnerUser: user?.role === "partner",
       getPartnerByReferralCode,
       userReferralCode,
       getClinicHospitalId,

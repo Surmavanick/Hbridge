@@ -9,7 +9,7 @@ import emailjs from "@emailjs/browser";
 import { EMAILJS_CONFIG, isEmailJSConfigured } from "@/lib/emailjs";
 
 export default function AuthPage() {
-  const { user, login, isSopikoPartner, resetPassword } = useAuth();
+  const { user, login, isPartnerUser, resetPassword } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -79,7 +79,7 @@ export default function AuthPage() {
 
     toast.success("Logged in successfully");
 
-    if (role === "partner" && email.trim().toLowerCase() === "sopiko@healthbridge.com") {
+    if (role === "partner") {
       navigate(from || "/admin", { replace: true });
       return;
     }
@@ -114,7 +114,7 @@ export default function AuthPage() {
               Signed in as {user.name}.
             </p>
             <div className="flex items-center justify-center gap-3 pt-4">
-              {isSopikoPartner && <Button className="rounded-xl h-10" onClick={() => navigate("/admin")}>Go to Admin</Button>}
+              {isPartnerUser && <Button className="rounded-xl h-10" onClick={() => navigate("/admin")}>Go to Admin</Button>}
               <Button variant="outline" className="rounded-xl h-10" onClick={() => navigate("/")}>Back to Home</Button>
             </div>
         </div>
