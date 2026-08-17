@@ -20,6 +20,7 @@ import { cn } from "@/lib/utils";
 import {
   CONSULTATION_SLOTS, getDoctorBusySlots, getFreeTimesForDate,
   hasFreeSlotInRange, findNextFreeSlot, whoIsBusy, sortDoctorsBySpecialtyMatch,
+  CONSULTATION_SESSION_TITLE, PROPOSED_CONSULTATION_SESSION_TITLE,
 } from "@/lib/doctorAvailability";
 import { createConsultationRoomUrl, isRealConsultationRoom } from "@/lib/videoCall";
 
@@ -163,16 +164,19 @@ export function ClinicPatientDrawer({ booking, onClose }: ClinicPatientDrawerPro
 
     // Master Schedule (partner/admin) reads from `sessions`, not consultationScheduledAt —
     // keep them in sync so a clinic-confirmed consultation actually shows up there.
+    // This also replaces any AI-proposed placeholder session with the real, confirmed one.
     const consultationSession: BookingSession = {
       date: activeDate,
       time: selectedTime,
       durationMin: 60,
-      title: "Consultation",
+      title: CONSULTATION_SESSION_TITLE,
       doctorId: doctor.id,
       hospitalId: booking!.hospitalId!,
       location: hospital?.address,
     };
-    const otherSessions = (booking!.sessions ?? []).filter((s) => s.title !== "Consultation");
+    const otherSessions = (booking!.sessions ?? []).filter(
+      (s) => s.title !== CONSULTATION_SESSION_TITLE && s.title !== PROPOSED_CONSULTATION_SESSION_TITLE
+    );
 
     updateBooking(booking!.id, {
       doctorId: doctor.id,

@@ -4,6 +4,11 @@ import type { BookingRequest, Doctor } from "@/data/mockData";
 export const CONSULTATION_SLOTS = ["09:00", "10:00", "11:00", "14:00", "15:00", "16:00", "17:00"];
 const DEFAULT_DURATION_MIN = 60;
 
+// Session titles used to tell a clinic-confirmed consultation apart from an
+// AI-proposed one still awaiting review, wherever sessions are rendered.
+export const CONSULTATION_SESSION_TITLE = "Consultation";
+export const PROPOSED_CONSULTATION_SESSION_TITLE = "Consultation (Proposed)";
+
 export interface BusySlot {
   start: Date;
   end: Date;

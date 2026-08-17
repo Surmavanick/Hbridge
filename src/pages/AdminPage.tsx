@@ -19,7 +19,7 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContaine
 import { cn } from "@/lib/utils";
 import { format, addDays } from "date-fns";
 import { useAuth } from "@/store/authStore";
-import { getDoctorBusySlots, findFirstFreeSlotInRange, findNextFreeSlot, pickBestDoctor } from "@/lib/doctorAvailability";
+import { getDoctorBusySlots, findFirstFreeSlotInRange, findNextFreeSlot, pickBestDoctor, PROPOSED_CONSULTATION_SESSION_TITLE, CONSULTATION_SESSION_TITLE } from "@/lib/doctorAvailability";
 
 // NEW COMPONENTS
 import { KanbanBoard } from "@/components/admin/KanbanBoard";
@@ -116,15 +116,23 @@ function MobileScheduleRow({ booking, dateStr, onOpenPatient }: { booking: Booki
 
       <div className="mt-3 space-y-1.5">
         {sessions.length > 0 ? (
-          sessions.map((session, idx) => (
-            <div key={idx} className="flex items-center justify-between gap-3 rounded-lg border border-slate-200 bg-slate-50 px-2.5 py-2">
-              <div className="min-w-0 flex items-center gap-2">
-                <span className={cn("w-2.5 h-2.5 rounded-full shrink-0", getSessionColor(session.title))} />
-                <span className="text-xs font-medium text-slate-700 truncate">{session.title}</span>
+          sessions.map((session, idx) => {
+            const isProposed = session.title === PROPOSED_CONSULTATION_SESSION_TITLE;
+            return (
+              <div key={idx} className={cn(
+                "flex items-center justify-between gap-3 rounded-lg border px-2.5 py-2",
+                isProposed ? "border-violet-200 border-dashed bg-violet-50/50" : "border-slate-200 bg-slate-50"
+              )}>
+                <div className="min-w-0 flex items-center gap-2">
+                  <span className={cn("w-2.5 h-2.5 rounded-full shrink-0", isProposed ? "bg-violet-400" : getSessionColor(session.title))} />
+                  <span className={cn("text-xs font-medium truncate", isProposed ? "text-violet-700" : "text-slate-700")}>
+                    {isProposed ? `✨ ${CONSULTATION_SESSION_TITLE}` : session.title}
+                  </span>
+                </div>
+                <span className="text-[11px] font-semibold text-slate-500 shrink-0">{session.time} · {session.durationMin}m</span>
               </div>
-              <span className="text-[11px] font-semibold text-slate-500 shrink-0">{session.time} · {session.durationMin}m</span>
-            </div>
-          ))
+            );
+          })
         ) : (
           <p className="text-xs text-slate-500 rounded-lg border border-dashed border-slate-200 px-2.5 py-2 bg-slate-50/60">
             {booking.notes ? (booking.notes.length > 72 ? booking.notes.substring(0, 72) + "…" : booking.notes) : "No sessions today"}
@@ -225,6 +233,18 @@ export default function AdminPage() {
               aiTimers.current.push(setTimeout(() => toast.success("Profile complete — all documents verified ✓"), 900)); },
       () => {
         setAiProcStep(2);
+        const proposedSession: BookingSession | undefined =
+          suggestedSlot && bestDoctor
+            ? {
+                date: suggestedSlot.date,
+                time: suggestedSlot.time,
+                durationMin: 60,
+                title: PROPOSED_CONSULTATION_SESSION_TITLE,
+                doctorId: bestDoctor.id,
+                hospitalId: AI_TARGET_HOSPITAL_ID,
+                location: targetHospital?.address,
+              }
+            : undefined;
         updateBooking(id, {
           status: "Awaiting Hospital Response",
           hospitalId: AI_TARGET_HOSPITAL_ID,
@@ -237,6 +257,9 @@ export default function AdminPage() {
                 message: `AI suggested ${bestDoctor?.name} — ${format(new Date(suggestedSlot.date), "MMM d")} at ${suggestedSlot.time}.`,
               }
             : undefined,
+          sessions: proposedSession
+            ? [...(target.sessions ?? []).filter((s) => s.title !== PROPOSED_CONSULTATION_SESSION_TITLE), proposedSession]
+            : target.sessions,
         });
         const slotText = suggestedSlot
           ? ` ${bestDoctor?.name} suggested for ${format(new Date(suggestedSlot.date), "MMM d")} at ${suggestedSlot.time}.`
@@ -1066,7 +1089,8 @@ function SessionBlock({ session, onClick }: { session: BookingSession, onClick: 
   if (left < 0) { width += left; left = 0; }
   if (left + width > 100) width = 100 - left;
 
-  const colorClass = getSessionColor(session.title);
+  const isProposed = session.title === PROPOSED_CONSULTATION_SESSION_TITLE;
+  const colorClass = isProposed ? "bg-violet-100" : getSessionColor(session.title);
 
   const endTime = (() => {
     const totalMin = h * 60 + m + session.durationMin;
@@ -1077,17 +1101,20 @@ function SessionBlock({ session, onClick }: { session: BookingSession, onClick: 
     <div
       onClick={onClick}
       className={cn(
-        "absolute top-0 bottom-0 rounded-md shadow-sm cursor-pointer border border-white/20 group",
+        "absolute top-0 bottom-0 rounded-md shadow-sm cursor-pointer group",
         "hover:brightness-110 hover:shadow-md hover:z-50 transition-all z-10",
+        isProposed ? "border-2 border-dashed border-violet-400" : "border border-white/20",
         colorClass,
       )}
       style={{ left: `${Math.max(0, left)}%`, width: `${Math.max(2, width)}%` }}
     >
       {/* ── Inner visible block (hides overflow) ── */}
       <div className="h-full w-full overflow-hidden flex flex-col justify-center px-2 py-1 relative">
-        <p className="font-bold text-[10px] xl:text-[11px] truncate drop-shadow-sm text-white">{session.title}</p>
+        <p className={cn("font-bold text-[10px] xl:text-[11px] truncate drop-shadow-sm", isProposed ? "text-violet-700" : "text-white")}>
+          {isProposed ? `✨ ${CONSULTATION_SESSION_TITLE}` : session.title}
+        </p>
         {session.durationMin >= 45 && (
-           <p className="text-[9px] font-medium text-white/90 truncate flex items-center gap-1 mt-0.5">
+           <p className={cn("text-[9px] font-medium truncate flex items-center gap-1 mt-0.5", isProposed ? "text-violet-600" : "text-white/90")}>
              <Clock className="h-2.5 w-2.5" /> {session.time} – {endTime}
            </p>
         )}
@@ -1096,17 +1123,22 @@ function SessionBlock({ session, onClick }: { session: BookingSession, onClick: 
       {/* ── Hover expandable popout (always fully visible on hover) ── */}
       <div className={cn(
         "absolute -inset-1 px-3 py-2 rounded-lg opacity-0 pointer-events-none group-hover:opacity-100 group-hover:pointer-events-auto transition-opacity shadow-lg flex flex-col justify-center z-50",
+        isProposed && "border-2 border-dashed border-violet-400",
         colorClass
       )}
       style={{ minWidth: 'max-content' }}
       >
-        <p className="font-bold text-xs text-white truncate drop-shadow-sm">{session.title}</p>
-        <p className="text-[10px] font-medium text-white/95 mt-0.5 mb-1 flex items-center gap-1">
+        <p className={cn("font-bold text-xs truncate drop-shadow-sm", isProposed ? "text-violet-700" : "text-white")}>
+          {isProposed ? `✨ ${CONSULTATION_SESSION_TITLE} (AI proposed)` : session.title}
+        </p>
+        <p className={cn("text-[10px] font-medium mt-0.5 mb-1 flex items-center gap-1", isProposed ? "text-violet-600" : "text-white/95")}>
           <Clock className="h-3 w-3" /> {session.time} – {endTime} ({session.durationMin}m)
         </p>
-        <div className="flex -space-x-1 mt-auto">
-          <div className="w-5 h-5 rounded-full bg-white/20 flex items-center justify-center text-[9px] font-bold text-white border border-white/30 backdrop-blur-sm">A</div>
-        </div>
+        {!isProposed && (
+          <div className="flex -space-x-1 mt-auto">
+            <div className="w-5 h-5 rounded-full bg-white/20 flex items-center justify-center text-[9px] font-bold text-white border border-white/30 backdrop-blur-sm">A</div>
+          </div>
+        )}
       </div>
     </div>
   );
