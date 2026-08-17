@@ -21,6 +21,7 @@ import {
   CONSULTATION_SLOTS, getDoctorBusySlots, getFreeTimesForDate,
   hasFreeSlotInRange, findNextFreeSlot, whoIsBusy,
 } from "@/lib/doctorAvailability";
+import { createConsultationRoomUrl, isRealConsultationRoom } from "@/lib/videoCall";
 
 interface ClinicPatientDrawerProps {
   booking: BookingRequest | null;
@@ -127,7 +128,11 @@ export function ClinicPatientDrawer({ booking, onClose }: ClinicPatientDrawerPro
       return;
     }
     const scheduledAt = `${activeDate}T${selectedTime}:00`;
-    const consultationLink = doctor.meetLink ?? `https://meet.google.com/hb-${booking!.hospitalId}-room`;
+    // Reuse the existing room on reschedule (same link the patient already has);
+    // only mint a fresh one the first time, or to replace an old fake mock link.
+    const consultationLink = isRealConsultationRoom(booking!.consultationLink)
+      ? booking!.consultationLink!
+      : createConsultationRoomUrl(booking!.id, booking!.patientName);
 
     // Master Schedule (partner/admin) reads from `sessions`, not consultationScheduledAt —
     // keep them in sync so a clinic-confirmed consultation actually shows up there.

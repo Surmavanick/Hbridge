@@ -118,7 +118,6 @@ export interface Doctor {
   hospitalId: string;
   specialty: string;
   avatar?: string;
-  meetLink?: string;
 }
 
 export const countries = [
@@ -744,14 +743,14 @@ export const hospitals: Hospital[] = [
 ];
 
 export const mockDoctors: Doctor[] = [
-  { id: "d1", name: "Dr. Giorgi Beridze",      hospitalId: "h2", specialty: "Dental Surgery",   avatar: "https://i.pravatar.cc/150?u=d1", meetLink: "https://meet.google.com/gbr-dent-h2x" },
-  { id: "d2", name: "Dr. Nino Kapanadze",      hospitalId: "h2", specialty: "Plastic Surgery",  avatar: "https://i.pravatar.cc/150?u=d2", meetLink: "https://meet.google.com/nkp-plas-h2y" },
-  { id: "d3", name: "Dr. Levan Tsiklauri",     hospitalId: "h1", specialty: "Orthopedics",      avatar: "https://i.pravatar.cc/150?u=d3", meetLink: "https://meet.google.com/lts-orth-h1a" },
-  { id: "d4", name: "Dr. Tamara Javakhishvili",hospitalId: "h1", specialty: "Cardiology",       avatar: "https://i.pravatar.cc/150?u=d4", meetLink: "https://meet.google.com/tjv-card-h1b" },
-  { id: "d5", name: "Dr. Dato Mchedlidze",     hospitalId: "h1", specialty: "Hair Transplant",  avatar: "https://i.pravatar.cc/150?u=d5", meetLink: "https://meet.google.com/dmc-hair-h1c" },
-  { id: "d6", name: "Dr. Maia Kvaratskhelia",  hospitalId: "h3", specialty: "Ophthalmology",    avatar: "https://i.pravatar.cc/150?u=d6", meetLink: "https://meet.google.com/mkv-opht-h3a" },
-  { id: "d7", name: "Dr. Irakli Gorgadze",     hospitalId: "h3", specialty: "Neurology",        avatar: "https://i.pravatar.cc/150?u=d7", meetLink: "https://meet.google.com/igg-neur-h3b" },
-  { id: "d8", name: "Dr. Ana Chkhartishvili",  hospitalId: "h2", specialty: "Oncology",         avatar: "https://i.pravatar.cc/150?u=d8", meetLink: "https://meet.google.com/ach-onco-h2z" },
+  { id: "d1", name: "Dr. Giorgi Beridze",      hospitalId: "h2", specialty: "Dental Surgery",   avatar: "https://i.pravatar.cc/150?u=d1" },
+  { id: "d2", name: "Dr. Nino Kapanadze",      hospitalId: "h2", specialty: "Plastic Surgery",  avatar: "https://i.pravatar.cc/150?u=d2" },
+  { id: "d3", name: "Dr. Levan Tsiklauri",     hospitalId: "h1", specialty: "Orthopedics",      avatar: "https://i.pravatar.cc/150?u=d3" },
+  { id: "d4", name: "Dr. Tamara Javakhishvili",hospitalId: "h1", specialty: "Cardiology",       avatar: "https://i.pravatar.cc/150?u=d4" },
+  { id: "d5", name: "Dr. Dato Mchedlidze",     hospitalId: "h1", specialty: "Hair Transplant",  avatar: "https://i.pravatar.cc/150?u=d5" },
+  { id: "d6", name: "Dr. Maia Kvaratskhelia",  hospitalId: "h3", specialty: "Ophthalmology",    avatar: "https://i.pravatar.cc/150?u=d6" },
+  { id: "d7", name: "Dr. Irakli Gorgadze",     hospitalId: "h3", specialty: "Neurology",        avatar: "https://i.pravatar.cc/150?u=d7" },
+  { id: "d8", name: "Dr. Ana Chkhartishvili",  hospitalId: "h2", specialty: "Oncology",         avatar: "https://i.pravatar.cc/150?u=d8" },
 ];
 
 export const mockBookings: BookingRequest[] = [
