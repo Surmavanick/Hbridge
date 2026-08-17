@@ -138,7 +138,7 @@ function MobileScheduleRow({ booking, dateStr, onOpenPatient }: { booking: Booki
    MAIN COMPONENT
    ═══════════════════════════════════════════ */
 export default function AdminPage() {
-  const { bookings, updateStatus, assignBooking, addBooking } = useBookings();
+  const { bookings, updateStatus, updateBooking, assignBooking, addBooking } = useBookings();
   const { user, userReferralCode } = useAuth();
   const [currentDate, setCurrentDate] = useState<Date>(new Date("2026-03-12T00:00:00"));
   const [searchQuery, setSearchQuery] = useState("");
@@ -165,11 +165,11 @@ export default function AdminPage() {
   const AI_FLOW = [
     { title: "Verifying & accepting lead",        subtitle: "Confirming patient identity and assigning to your portfolio.", icon: "usercheck"  },
     { title: "Reviewing profile & documents",     subtitle: "Validating uploaded files and checking completeness.",        icon: "filecheck"  },
-    { title: "Notifying clinic via WhatsApp",     subtitle: "Sending patient summary and documents to partner clinic.",    icon: "message"    },
-    { title: "Clinic confirmed the appointment",  subtitle: "Clinic reviewed the case and accepted the patient.",          icon: "hospital"   },
-    { title: "Booking flights & accommodation",   subtitle: "Comparing routes, hotel prices and locking in the best deal.",icon: "plane"      },
-    { title: "Sending final invoice to patient",  subtitle: "Travel confirmed — price list compiled and invoice dispatched.", icon: "send"   },
+    { title: "Sending request to clinic",         subtitle: "Sending patient summary and documents for clinical review — awaiting approval and final cost.", icon: "message" },
   ];
+
+  // Demo clinic account is Leadermed (h1) — the only hospital with a live clinic login right now.
+  const AI_TARGET_HOSPITAL_ID = "h1";
 
   function aiSVG(key: string, size = 20) {
     const s = `width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"`;
@@ -200,21 +200,15 @@ export default function AdminPage() {
 
     const STEP_MS = 1800;
     const id = target.id;
+    const targetHospital = hospitals.find((h) => h.id === AI_TARGET_HOSPITAL_ID);
 
     const steps: Array<() => void> = [
       () => { setAiProcStep(0); if (user) assignBooking(id, user.id);
               aiTimers.current.push(setTimeout(() => toast.success(`Lead accepted — ${target.patientName} assigned to you ✓`), 900)); },
       () => { setAiProcStep(1); updateStatus(id, "Lead - Step 2: Profile Completed");
               aiTimers.current.push(setTimeout(() => toast.success("Profile complete — all documents verified ✓"), 900)); },
-      () => { setAiProcStep(2); updateStatus(id, "Awaiting Hospital Response");
-              aiTimers.current.push(setTimeout(() => toast("📲 WhatsApp notification sent to clinic — awaiting reply"), 900)); },
-      () => { setAiProcStep(3); updateStatus(id, "Lead - Step 3: Clinic Confirmation");
-              aiTimers.current.push(setTimeout(() => toast.success("Clinic accepted the patient ✓ — appointment confirmed"), 900)); },
-      () => { setAiProcStep(4); updateStatus(id, "Travel Coordination in Progress");
-              aiTimers.current.push(setTimeout(() => { toast("✈️ Flights checked · Apartments booked · Price list received ✓");
-                updateStatus(id, "Lead - Step 4: Travel Booked"); }, 900)); },
-      () => { setAiProcStep(5); updateStatus(id, "Lead - Step 5: Awaiting Arrival");
-              aiTimers.current.push(setTimeout(() => toast.success("Final invoice dispatched — patient is pre-arrival ready ✓"), 900)); },
+      () => { setAiProcStep(2); updateBooking(id, { status: "Awaiting Hospital Response", hospitalId: AI_TARGET_HOSPITAL_ID });
+              aiTimers.current.push(setTimeout(() => toast(`📋 Sent to ${targetHospital?.name ?? "the clinic"} — waiting for clinical approval. Final cost will be confirmed once the clinic reviews the case.`), 900)); },
     ];
 
     steps.forEach((fn, idx) => {

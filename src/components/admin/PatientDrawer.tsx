@@ -10,7 +10,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Calendar, Clock, MapPin, Stethoscope, FileText, ArrowRight, MessageSquare, Download, Plus, Trash2, Search, Check, Building2, X as XIcon, ChevronRight, Video, Copy } from "lucide-react";
+import { Calendar, Clock, MapPin, Stethoscope, FileText, ArrowRight, MessageSquare, Download, Plus, Trash2, Search, Check, Building2, X as XIcon, ChevronRight, Video, Copy, AlertTriangle } from "lucide-react";
 import { format } from "date-fns";
 
 const ALL_STATUSES: BookingStatus[] = [
@@ -316,21 +316,33 @@ export function PatientDrawer({ booking, onClose }: PatientDrawerProps) {
                 </div>
                 {booking.uploadedFiles.length > 0 ? (
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    {booking.uploadedFiles.map((file, i) => (
-                      <button key={i} onClick={() => handleDownload(file)}
-                        className="flex items-center justify-between p-3 border border-slate-200 rounded-lg hover:border-primary/30 hover:bg-primary/5 transition-colors group cursor-pointer w-full text-left">
-                        <div className="flex items-center gap-3 min-w-0">
-                          <div className="w-8 h-8 bg-primary/10 rounded flex items-center justify-center shrink-0">
-                            <FileText className="h-4 w-4 text-primary" />
+                    {booking.uploadedFiles.map((file, i) => {
+                      const mismatch = file.verified === false;
+                      return (
+                        <button key={i} onClick={() => handleDownload(file)}
+                          className={`flex items-center justify-between p-3 border rounded-lg transition-colors group cursor-pointer w-full text-left ${
+                            mismatch
+                              ? "border-red-200 bg-red-50 hover:border-red-300 hover:bg-red-100/60"
+                              : "border-slate-200 hover:border-primary/30 hover:bg-primary/5"
+                          }`}>
+                          <div className="flex items-center gap-3 min-w-0">
+                            <div className={`w-8 h-8 rounded flex items-center justify-center shrink-0 ${mismatch ? "bg-red-100" : "bg-primary/10"}`}>
+                              {mismatch
+                                ? <AlertTriangle className="h-4 w-4 text-red-500" />
+                                : <FileText className="h-4 w-4 text-primary" />}
+                            </div>
+                            <div className="min-w-0">
+                              <p className={`text-sm font-medium truncate ${mismatch ? "text-red-700" : "text-slate-700"}`}>{file.type}</p>
+                              <p className="text-[10px] text-slate-400 truncate">{file.name}</p>
+                              {mismatch && file.verifyReason && (
+                                <p className="text-[10px] text-red-500 mt-0.5">⚠ {file.verifyReason}</p>
+                              )}
+                            </div>
                           </div>
-                          <div className="min-w-0">
-                            <p className="text-sm font-medium text-slate-700 truncate">{file.type}</p>
-                            <p className="text-[10px] text-slate-400 truncate">{file.name}</p>
-                          </div>
-                        </div>
-                        <Download className="h-4 w-4 text-slate-300 group-hover:text-primary shrink-0 ml-2" />
-                      </button>
-                    ))}
+                          <Download className={`h-4 w-4 shrink-0 ml-2 ${mismatch ? "text-red-300 group-hover:text-red-500" : "text-slate-300 group-hover:text-primary"}`} />
+                        </button>
+                      );
+                    })}
                   </div>
                 ) : (
                   <p className="text-sm text-slate-400 text-center py-4 border border-dashed rounded-lg border-slate-200">No documents uploaded.</p>

@@ -1,7 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/store/authStore";
 import { useBookings } from "@/store/bookingStore";
-import { procedures, flightEstimates } from "@/data/mockData";
+import { procedures, flightEstimates, hospitals } from "@/data/mockData";
 import type { BookingStatus, BookingRequest, FlightEstimate } from "@/data/mockData";
 import { fetchLiveFlightPrice, type LiveFlightPrice } from "@/lib/flightPrices";
 import { Button } from "@/components/ui/button";
@@ -9,7 +9,8 @@ import { Input } from "@/components/ui/input";
 import {
   CalendarDays, MapPin, Stethoscope, Clock, CheckCircle2,
   Circle, ChevronRight, FileText, DollarSign, Timer, FileCheck,
-  FilePlus, MessageSquare, X, AlertTriangle, Lock, Video, Copy, Plane
+  FilePlus, MessageSquare, X, AlertTriangle, Lock, Video, Copy, Plane,
+  Building2, Hourglass
 } from "lucide-react";
 import { format } from "date-fns";
 import { useState, useEffect } from "react";
@@ -40,6 +41,7 @@ function getStatusLabel(status: BookingStatus): string {
     "Lead - Step 1: Awaiting Email Verification": "Awaiting Review",
     "Lead - Step 2: Profile Completed": "Under Review",
     "Lead - Step 3: Clinic Confirmation": "Clinic Matching",
+    "Awaiting Hospital Response": "Waiting Clinic Approval",
     "Lead - Step 4: Travel Booked": "Travel Arranged",
     "Lead - Step 5: Awaiting Arrival": "Awaiting Arrival",
     "In Treatment": "In Treatment",
@@ -323,6 +325,23 @@ export default function DashboardPage() {
                         Your request was not approved. Please contact us for more details.
                       </div>
                     )}
+
+                    {booking.status === "Awaiting Hospital Response" && (() => {
+                      const sentToHospital = hospitals.find((h) => h.id === booking.hospitalId);
+                      return (
+                        <div className="mx-6 mb-4 px-4 py-3 rounded-xl bg-amber-50 border border-amber-100 flex items-start gap-2.5">
+                          <Hourglass className="h-4 w-4 text-amber-500 shrink-0 mt-0.5" />
+                          <p className="text-[13px] text-amber-800">
+                            {sentToHospital ? (
+                              <>Sent to <strong>{sentToHospital.name}</strong> for review — waiting for clinical approval.</>
+                            ) : (
+                              <>Sent to our partner clinic for review — waiting for clinical approval.</>
+                            )}{" "}
+                            Final cost will be confirmed once the clinic reviews your case.
+                          </p>
+                        </div>
+                      );
+                    })()}
 
                     {/* Info chips */}
                     <div className="px-6 pb-4 grid grid-cols-3 gap-3">
