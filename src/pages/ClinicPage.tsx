@@ -6,11 +6,12 @@ import type { BookingRequest } from "@/data/mockData";
 import { Button } from "@/components/ui/button";
 import {
   CalendarDays, MapPin, Clock, Video, Copy, CheckCircle2,
-  Users, Hourglass, Stethoscope, ChevronRight, XCircle, HelpCircle,
+  Users, Hourglass, Stethoscope, ChevronRight, XCircle, HelpCircle, Building2,
 } from "lucide-react";
 import { format } from "date-fns";
 import { toast } from "sonner";
 import { ClinicPatientDrawer } from "@/components/clinic/ClinicPatientDrawer";
+import { findVisitSession } from "@/lib/doctorAvailability";
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -36,6 +37,7 @@ function PatientCard({ booking, onOpen, onCopyLink }: PatientCardProps) {
   const procedure = procedures.find((p) => p.id === booking.procedureId);
   const colors = getStatusColors(booking.status);
   const hasConsultation = !!booking.consultationLink;
+  const visitSession = findVisitSession(booking.sessions);
   const hasMismatchedDoc = booking.uploadedFiles.some((f) => f.verified === false);
 
   return (
@@ -133,6 +135,24 @@ function PatientCard({ booking, onOpen, onCopyLink }: PatientCardProps) {
           </div>
         </div>
       )}
+
+      {/* ── Physical visit quick-glance ── */}
+      {visitSession && (
+        <div className="mx-6 mb-5 bg-gradient-to-r from-indigo-50 to-purple-50 border border-indigo-200 rounded-2xl p-4">
+          <div className="flex items-start gap-3 min-w-0">
+            <div className="w-9 h-9 rounded-full bg-indigo-100 flex items-center justify-center flex-shrink-0">
+              <Building2 className="h-4 w-4 text-indigo-600" />
+            </div>
+            <div className="min-w-0">
+              <p className="text-[13px] font-semibold text-indigo-900 mb-0.5">In-Person Visit Scheduled</p>
+              <p className="text-[12px] text-indigo-700 flex items-center gap-1">
+                <CalendarDays className="h-3.5 w-3.5" />
+                {format(new Date(`${visitSession.date}T${visitSession.time}:00`), "EEEE, MMMM d 'at' HH:mm")}
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -151,6 +171,7 @@ export default function ClinicPage() {
 
   const pendingCount = clinicBookings.filter((b) => !b.consultationLink && b.status !== "Rejected" && b.status !== "More Information Required").length;
   const confirmedCount = clinicBookings.filter((b) => !!b.consultationLink).length;
+  const visitScheduledCount = clinicBookings.filter((b) => !!findVisitSession(b.sessions)).length;
   const needsAttentionCount = clinicBookings.filter((b) => b.status === "More Information Required").length;
   const declinedCount = clinicBookings.filter((b) => b.status === "Rejected").length;
 
@@ -189,6 +210,12 @@ export default function ClinicPage() {
               <CheckCircle2 className="h-4 w-4 text-green-500" />
               <span className="text-[13px] font-semibold text-green-700">{confirmedCount} Confirmed</span>
             </div>
+            {visitScheduledCount > 0 && (
+              <div className="bg-indigo-50 border border-indigo-200 rounded-xl px-4 py-2 flex items-center gap-2">
+                <Building2 className="h-4 w-4 text-indigo-500" />
+                <span className="text-[13px] font-semibold text-indigo-700">{visitScheduledCount} Visit Scheduled</span>
+              </div>
+            )}
             {needsAttentionCount > 0 && (
               <div className="bg-amber-50 border border-amber-200 rounded-xl px-4 py-2 flex items-center gap-2">
                 <HelpCircle className="h-4 w-4 text-amber-500" />

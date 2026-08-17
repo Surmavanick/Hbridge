@@ -11,7 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import {
   Mail, Phone, MapPin, CalendarDays, Banknote, StickyNote,
   AlertTriangle, CheckCircle2, XCircle, HelpCircle, Video, Copy, Stethoscope,
-  CalendarClock, FileText, Loader2, Sparkles,
+  CalendarClock, FileText, Loader2, Sparkles, Building2,
 } from "lucide-react";
 import { toast } from "sonner";
 import emailjs from "@emailjs/browser";
@@ -21,6 +21,7 @@ import {
   CONSULTATION_SLOTS, getDoctorBusySlots, getFreeTimesForDate,
   hasFreeSlotInRange, findNextFreeSlot, whoIsBusy, sortDoctorsBySpecialtyMatch,
   consultationSessionTitle, isConsultationSession,
+  visitSessionTitle, isVisitSession, findVisitSession,
 } from "@/lib/doctorAvailability";
 import { createConsultationRoomUrl, isRealConsultationRoom } from "@/lib/videoCall";
 
@@ -36,6 +37,8 @@ export function ClinicPatientDrawer({ booking, onClose }: ClinicPatientDrawerPro
   const [selectedDate, setSelectedDate] = useState<string>("");
   const [selectedTime, setSelectedTime] = useState<string>("");
   const [isScheduling, setIsScheduling] = useState(false);
+  const [visitDate, setVisitDate] = useState<string>("");
+  const [visitTime, setVisitTime] = useState<string>("");
   const [showDecline, setShowDecline] = useState(false);
   const [declineReason, setDeclineReason] = useState("");
   const [showMoreInfo, setShowMoreInfo] = useState(false);
@@ -113,6 +116,36 @@ export function ClinicPatientDrawer({ booking, onClose }: ClinicPatientDrawerPro
   const activeDate = selectedDate || dateOptions.find((d) => d.freeCount > 0)?.value || dateOptions[0]?.value || "";
   const freeTimesToday = getFreeTimesForDate(busySlots, activeDate);
 
+  // The in-person visit stays with whichever doctor the consultation was
+  // confirmed with — it's a separate booking stage, not a re-pick.
+  const confirmedDoctor = booking ? mockDoctors.find((d) => d.id === booking.doctorId) : undefined;
+  const visitBusySlots = useMemo(
+    () => (confirmedDoctor ? getDoctorBusySlots(confirmedDoctor.id, bookings, booking?.id) : []),
+    [confirmedDoctor, bookings, booking?.id]
+  );
+  const visitDateOptions = useMemo(() => {
+    const days = Array.from({ length: 14 }, (_, i) => {
+      const d = addDays(today, i);
+      const dateStr = format(d, "yyyy-MM-dd");
+      return {
+        value: dateStr,
+        label: format(d, "EEE, MMM d"),
+        freeCount: getFreeTimesForDate(visitBusySlots, dateStr).length,
+      };
+    });
+    if (visitDate && !days.some((d) => d.value === visitDate)) {
+      days.unshift({
+        value: visitDate,
+        label: format(new Date(visitDate), "EEE, MMM d"),
+        freeCount: getFreeTimesForDate(visitBusySlots, visitDate).length,
+      });
+    }
+    return days;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [visitBusySlots, visitDate]);
+  const activeVisitDate = visitDate || visitDateOptions.find((d) => d.freeCount > 0)?.value || visitDateOptions[0]?.value || "";
+  const visitFreeTimesToday = getFreeTimesForDate(visitBusySlots, activeVisitDate);
+
   if (!booking) return null;
 
   const matchesPreferredWindow = booking.preferredDateStart && booking.preferredDateEnd
@@ -123,6 +156,8 @@ export function ClinicPatientDrawer({ booking, onClose }: ClinicPatientDrawerPro
     : null;
 
   const alreadyScheduled = !!booking.consultationLink;
+  const visitSession = findVisitSession(booking.sessions);
+  const visitAlreadyScheduled = !!visitSession;
 
   function resetForms() {
     setShowDecline(false);
@@ -132,6 +167,8 @@ export function ClinicPatientDrawer({ booking, onClose }: ClinicPatientDrawerPro
     setSelectedDoctorId("");
     setSelectedDate("");
     setSelectedTime("");
+    setVisitDate("");
+    setVisitTime("");
   }
 
   function handleClose() {
@@ -216,6 +253,33 @@ export function ClinicPatientDrawer({ booking, onClose }: ClinicPatientDrawerPro
     }
     setIsScheduling(false);
     resetForms();
+  }
+
+  function handleConfirmVisit() {
+    if (!confirmedDoctor || !activeVisitDate || !visitTime) {
+      toast.error("Pick a date and time for the visit first.");
+      return;
+    }
+    const visitSession: BookingSession = {
+      date: activeVisitDate,
+      time: visitTime,
+      durationMin: 60,
+      title: visitSessionTitle(procedure?.name ?? "Visit"),
+      doctorId: confirmedDoctor.id,
+      hospitalId: booking!.hospitalId!,
+      location: hospital?.address,
+    };
+    const otherSessions = (booking!.sessions ?? []).filter((s) => !isVisitSession(s.title));
+
+    // No dedicated columns for the visit — sessions[] is the only record of it.
+    updateBooking(booking!.id, {
+      status: "Appointment Scheduled",
+      sessions: [...otherSessions, visitSession],
+    });
+
+    toast.success(visitAlreadyScheduled ? "Visit rescheduled." : "In-person visit scheduled.");
+    setVisitDate("");
+    setVisitTime("");
   }
 
   function handleDecline() {
@@ -493,6 +557,97 @@ export function ClinicPatientDrawer({ booking, onClose }: ClinicPatientDrawerPro
               )}
               {isScheduling ? "Creating video room…" : alreadyScheduled ? "Reschedule Consultation" : "Confirm & Schedule"}
             </Button>
+          </div>
+
+          {/* Physical Visit — separate, in-person stage. Booked after the consultation
+              is confirmed above; same doctor, no video link, real clinic address. */}
+          <div className="bg-white rounded-xl border border-slate-200 p-5 shadow-sm space-y-4">
+            <p className="text-[11px] font-semibold text-slate-400 uppercase tracking-wide">Physical Visit — In-Person Appointment</p>
+
+            {!alreadyScheduled ? (
+              <div className="flex items-start gap-2 bg-slate-50 border border-slate-200 rounded-lg px-3 py-2.5 text-[12.5px] text-slate-500">
+                <Building2 className="h-3.5 w-3.5 shrink-0 mt-0.5" />
+                <span>Confirm the consultation above first — the in-person visit can be scheduled once that's set.</span>
+              </div>
+            ) : (
+              <>
+                {confirmedDoctor && (
+                  <p className="text-[12.5px] text-slate-500">
+                    With <span className="font-medium text-slate-700">{confirmedDoctor.name}</span>
+                    {hospital?.address && <> at <span className="font-medium text-slate-700">{hospital.address}</span></>}.
+                  </p>
+                )}
+
+                {/* Date strip */}
+                <div>
+                  <label className="text-[11px] font-semibold text-slate-400 uppercase tracking-wide mb-2 block">Date</label>
+                  <div className="flex gap-1.5 overflow-x-auto pb-1">
+                    {visitDateOptions.map((opt) => (
+                      <button
+                        key={opt.value}
+                        type="button"
+                        disabled={opt.freeCount === 0}
+                        onClick={() => { setVisitDate(opt.value); setVisitTime(""); }}
+                        className={cn(
+                          "px-3 py-2 rounded-xl text-[12.5px] font-medium border transition-all shrink-0 text-center",
+                          activeVisitDate === opt.value
+                            ? "bg-indigo-500 text-white border-indigo-500 shadow-sm"
+                            : opt.freeCount === 0
+                            ? "bg-slate-50 text-slate-300 border-slate-100 cursor-not-allowed line-through"
+                            : "bg-white text-slate-700 border-slate-200 hover:border-slate-300 hover:bg-slate-50"
+                        )}
+                      >
+                        {opt.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Time grid */}
+                <div>
+                  <label className="text-[11px] font-semibold text-slate-400 uppercase tracking-wide mb-2 block">Time</label>
+                  <div className="flex flex-wrap gap-2">
+                    {CONSULTATION_SLOTS.map((t) => {
+                      const free = visitFreeTimesToday.includes(t);
+                      const busyWith = !free ? whoIsBusy(visitBusySlots, activeVisitDate, t) : null;
+                      return (
+                        <button
+                          key={t}
+                          type="button"
+                          disabled={!free}
+                          title={busyWith ? `Busy — ${busyWith}` : undefined}
+                          onClick={() => setVisitTime(t)}
+                          className={cn(
+                            "px-3.5 py-2 rounded-xl text-[13px] font-medium border transition-all",
+                            visitTime === t
+                              ? "bg-indigo-500 text-white border-indigo-500 shadow-sm"
+                              : !free
+                              ? "bg-slate-50 text-slate-300 border-slate-100 line-through cursor-not-allowed"
+                              : "bg-white text-slate-700 border-slate-200 hover:border-slate-300 hover:bg-slate-50"
+                          )}
+                        >
+                          {t}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {visitSession && (
+                  <div className="bg-gradient-to-r from-indigo-50 to-purple-50 border border-indigo-200 rounded-xl p-3.5">
+                    <p className="text-[12.5px] font-semibold text-indigo-900 mb-0.5 flex items-center gap-1.5">
+                      <Building2 className="h-3.5 w-3.5" /> Currently scheduled
+                    </p>
+                    <p className="text-[12px] text-indigo-700">{format(new Date(`${visitSession.date}T${visitSession.time}:00`), "EEEE, MMMM d 'at' HH:mm")}</p>
+                  </div>
+                )}
+
+                <Button className="w-full rounded-xl bg-indigo-500 hover:bg-indigo-600" onClick={handleConfirmVisit} disabled={!visitTime}>
+                  <Building2 className="h-4 w-4 mr-1.5" />
+                  {visitAlreadyScheduled ? "Reschedule Visit" : "Schedule Visit"}
+                </Button>
+              </>
+            )}
           </div>
 
           {/* Decline / More info */}

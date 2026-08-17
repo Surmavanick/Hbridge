@@ -1,5 +1,5 @@
 import { addDays, format } from "date-fns";
-import type { BookingRequest, Doctor } from "@/data/mockData";
+import type { BookingRequest, BookingSession, Doctor } from "@/data/mockData";
 
 export const CONSULTATION_SLOTS = ["09:00", "10:00", "11:00", "14:00", "15:00", "16:00", "17:00"];
 const DEFAULT_DURATION_MIN = 60;
@@ -16,6 +16,24 @@ export function consultationSessionTitle(doctorName: string): string {
 
 export function isConsultationSession(title: string): boolean {
   return title.startsWith(CONSULTATION_SESSION_PREFIX);
+}
+
+// In-person visit sessions (the physical appointment, separate from the
+// online consultation) follow the same prefix-match pattern.
+export const VISIT_SESSION_PREFIX = "In-Person Visit";
+
+export function visitSessionTitle(procedureName: string): string {
+  return `${VISIT_SESSION_PREFIX} — ${procedureName}`;
+}
+
+export function isVisitSession(title: string): boolean {
+  return title.startsWith(VISIT_SESSION_PREFIX);
+}
+
+// No dedicated columns for the visit — `sessions` is the single source of
+// truth, so this is how every screen reads "is a visit scheduled, and when."
+export function findVisitSession(sessions: BookingSession[] | undefined): BookingSession | undefined {
+  return sessions?.find((s) => isVisitSession(s.title));
 }
 
 export interface BusySlot {

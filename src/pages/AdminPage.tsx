@@ -19,7 +19,7 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContaine
 import { cn } from "@/lib/utils";
 import { format, addDays } from "date-fns";
 import { useAuth } from "@/store/authStore";
-import { getDoctorBusySlots, findFirstFreeSlotInRange, findNextFreeSlot, pickBestDoctor, consultationSessionTitle, isConsultationSession } from "@/lib/doctorAvailability";
+import { getDoctorBusySlots, findFirstFreeSlotInRange, findNextFreeSlot, pickBestDoctor, consultationSessionTitle, isConsultationSession, isVisitSession } from "@/lib/doctorAvailability";
 
 // NEW COMPONENTS
 import { KanbanBoard } from "@/components/admin/KanbanBoard";
@@ -31,6 +31,7 @@ import { PatientDrawer } from "@/components/admin/PatientDrawer";
 
 const SESSION_TYPE_COLORS: Record<string, string> = {
   consultation: "bg-teal-500/90",
+  visit:        "bg-indigo-500/85",
   diagnostic:   "bg-sky-500/90",
   surgery:      "bg-rose-500/90",
   therapy:      "bg-violet-500/85",
@@ -39,6 +40,7 @@ const SESSION_TYPE_COLORS: Record<string, string> = {
 };
 
 const getSessionColor = (title: string): string => {
+  if (isVisitSession(title)) return SESSION_TYPE_COLORS.visit;
   const t = title.toLowerCase();
   if (/surg|implant|transplant|acl|lasik|fue|rhinoplast/.test(t)) return SESSION_TYPE_COLORS.surgery;
   if (/consult|briefing|review|planning|ivf|report/.test(t)) return SESSION_TYPE_COLORS.consultation;
@@ -56,9 +58,9 @@ const statusMeta: Record<string, { label: string; color: string; bg: string; ico
   "Lead - Step 5: Awaiting Arrival":            { label: "STEP 5 · Pre-Arrival", color: "text-emerald-700", bg: "bg-emerald-50 border-emerald-200", icon: CircleDot },
   "Submitted":                                  { label: "Submitted", color: "text-sky-700", bg: "bg-sky-50 border-sky-200", icon: FileText },
   "Under Review":                               { label: "Under Review", color: "text-sky-700", bg: "bg-sky-50 border-sky-200", icon: Hourglass },
-  "Awaiting Hospital Response":                 { label: "Awaiting Clinic", color: "text-orange-700", bg: "bg-orange-50 border-orange-200", icon: Hourglass },
-  "Hospital Confirmed":                         { label: "Confirmed", color: "text-emerald-700", bg: "bg-emerald-50 border-emerald-200", icon: CheckCircle2 },
-  "Appointment Scheduled":                      { label: "Scheduled", color: "text-emerald-700", bg: "bg-emerald-50 border-emerald-200", icon: CheckCircle2 },
+  "Awaiting Hospital Response":                 { label: "Awaiting Doctor", color: "text-orange-700", bg: "bg-orange-50 border-orange-200", icon: Hourglass },
+  "Hospital Confirmed":                         { label: "Consultation Confirmed", color: "text-emerald-700", bg: "bg-emerald-50 border-emerald-200", icon: CheckCircle2 },
+  "Appointment Scheduled":                      { label: "Visit Scheduled", color: "text-emerald-700", bg: "bg-emerald-50 border-emerald-200", icon: CheckCircle2 },
   "In Treatment":                               { label: "In Treatment", color: "text-teal-700", bg: "bg-teal-50 border-teal-200", icon: Activity },
   "More Information Required":                  { label: "More Info", color: "text-amber-700", bg: "bg-amber-50 border-amber-200", icon: AlertTriangle },
   "Completed":                                  { label: "Completed", color: "text-slate-600", bg: "bg-slate-50 border-slate-200", icon: CheckCircle2 },

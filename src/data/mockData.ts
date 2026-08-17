@@ -102,13 +102,19 @@ export interface BookingRequest {
     confirmedTime?: string;
     message?: string;
     // "proposed" = AI-suggested doctor/slot awaiting clinic review, not yet confirmed.
+    // This governs the consultation (online) stage specifically.
     status: "accepted" | "rejected" | "pending" | "more_info" | "proposed";
   };
   doctorId?: string;
+  // Includes the in-person visit (second stage, booked once the consultation is
+  // confirmed) as a session titled via `visitSessionTitle()` — no dedicated
+  // columns for it, `sessions` is the single source of truth. Reflected in
+  // `status: "Appointment Scheduled"`.
   sessions?: BookingSession[];
   referralCode?: string;
   assignedPartnerId?: string | null;
   budget?: string;
+  // Consultation (online video call) — first stage, doctor/clinic approves.
   consultationLink?: string;
   consultationScheduledAt?: string;
 }

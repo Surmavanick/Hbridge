@@ -4,6 +4,7 @@ import { useBookings } from "@/store/bookingStore";
 import { procedures, flightEstimates, hospitals } from "@/data/mockData";
 import type { BookingStatus, BookingRequest, FlightEstimate } from "@/data/mockData";
 import { fetchLiveFlightPrice, type LiveFlightPrice } from "@/lib/flightPrices";
+import { findVisitSession } from "@/lib/doctorAvailability";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -41,7 +42,9 @@ function getStatusLabel(status: BookingStatus): string {
     "Lead - Step 1: Awaiting Email Verification": "Awaiting Review",
     "Lead - Step 2: Profile Completed": "Under Review",
     "Lead - Step 3: Clinic Confirmation": "Clinic Matching",
-    "Awaiting Hospital Response": "Waiting Clinic Approval",
+    "Awaiting Hospital Response": "Waiting Doctor Approval",
+    "Hospital Confirmed": "Consultation Confirmed",
+    "Appointment Scheduled": "Visit Scheduled",
     "Lead - Step 4: Travel Booked": "Travel Arranged",
     "Lead - Step 5: Awaiting Arrival": "Awaiting Arrival",
     "In Treatment": "In Treatment",
@@ -249,6 +252,7 @@ export default function DashboardPage() {
                 const isRejected = booking.status === "Rejected";
                 const requiredDocs = procedure?.requiredDocuments ?? [];
                 const optionalDocs = procedure?.optionalDocuments ?? [];
+                const visitSession = findVisitSession(booking.sessions);
 
                 return (
                   <div key={booking.id} className="bg-white rounded-[20px] border border-border shadow-sm overflow-hidden">
@@ -333,9 +337,9 @@ export default function DashboardPage() {
                           <Hourglass className="h-4 w-4 text-amber-500 shrink-0 mt-0.5" />
                           <p className="text-[13px] text-amber-800">
                             {sentToHospital ? (
-                              <>Sent to <strong>{sentToHospital.name}</strong> for review — waiting for clinical approval.</>
+                              <>Sent to <strong>{sentToHospital.name}</strong> for review — waiting for the doctor's approval of your consultation.</>
                             ) : (
-                              <>Sent to our partner clinic for review — waiting for clinical approval.</>
+                              <>Sent to our partner clinic for review — waiting for the doctor's approval of your consultation.</>
                             )}{" "}
                             Final cost will be confirmed once the clinic reviews your case.
                           </p>
@@ -500,6 +504,33 @@ export default function DashboardPage() {
                             <Copy className="h-3.5 w-3.5" />
                             Copy Link
                           </button>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* In-Person Visit Scheduled — separate physical appointment, booked after the consultation */}
+                    {visitSession && (
+                      <div className="mx-6 mb-4 bg-gradient-to-r from-indigo-50 to-purple-50 border border-indigo-200 rounded-2xl p-4">
+                        <div className="flex items-start gap-3">
+                          <div className="w-8 h-8 rounded-full bg-indigo-100 flex items-center justify-center flex-shrink-0">
+                            <Building2 className="h-4 w-4 text-indigo-600" />
+                          </div>
+                          <div>
+                            <p className="text-[13px] font-semibold text-indigo-900">In-Person Visit Scheduled</p>
+                            <p className="text-[12px] text-indigo-700 mt-0.5">
+                              Your physical appointment at the clinic.
+                            </p>
+                            <p className="text-[12px] text-indigo-800 font-medium mt-1 flex items-center gap-1">
+                              <CalendarDays className="h-3.5 w-3.5" />
+                              {format(new Date(`${visitSession.date}T${visitSession.time}:00`), "EEEE, MMMM d 'at' HH:mm")}
+                            </p>
+                            {visitSession.location && (
+                              <p className="text-[12px] text-indigo-700 mt-1 flex items-center gap-1">
+                                <MapPin className="h-3.5 w-3.5" />
+                                {visitSession.location}
+                              </p>
+                            )}
+                          </div>
                         </div>
                       </div>
                     )}
