@@ -64,6 +64,9 @@ export default function BookPage() {
   const aiIcons = ["brain", "shield", "hospital", "calendar", "clipboard", "mail"];
   const DOCS_STEP_INDEX = 1; // "Verifying documents"
   const noDocsUploaded = files.length === 0;
+  const hasMismatchedDoc = files.some((f) => f.verified === false);
+  const docsIssue = noDocsUploaded || hasMismatchedDoc;
+  const filesVerifying = files.some((f) => f.verifying);
 
   function aiIconSVG(key: string, cls = "w-5 h-5") {
     const attrs = `viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className="${cls}"`;
@@ -633,9 +636,18 @@ export default function BookPage() {
                 <Textarea value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="Any relevant information about your medical history, preferences, etc." rows={3} />
               </div>
 
-              <div className="flex justify-between pt-2">
+              <div className="flex items-center justify-between pt-2">
                 <Button variant="outline" onClick={() => setStep(1)} className="gap-2"><ArrowLeft className="h-4 w-4" /> Back</Button>
-                <Button onClick={() => setStep(3)} className="gap-2">Next: Review <ArrowRight className="h-4 w-4" /></Button>
+                <div className="flex items-center gap-3">
+                  {filesVerifying && (
+                    <span className="text-xs text-muted-foreground flex items-center gap-1.5">
+                      <Loader2 className="h-3.5 w-3.5 animate-spin" /> Checking documents…
+                    </span>
+                  )}
+                  <Button onClick={() => setStep(3)} disabled={filesVerifying} className="gap-2">
+                    Next: Review <ArrowRight className="h-4 w-4" />
+                  </Button>
+                </div>
               </div>
             </CardContent>
           </Card>
@@ -678,7 +690,7 @@ export default function BookPage() {
 
                 {/* Center content */}
                 {(() => {
-                  const showDocsWarning = !aiComplete && aiStep === DOCS_STEP_INDEX && noDocsUploaded;
+                  const showDocsWarning = !aiComplete && aiStep === DOCS_STEP_INDEX && docsIssue;
                   return (
                 <div key={aiComplete ? "done" : aiStep} className="ai-animate-fade-scale" style={{ position: "relative", zIndex: 2, textAlign: "center", maxWidth: 500, padding: "0 20px" }}>
                   {/* Icon */}
@@ -701,11 +713,17 @@ export default function BookPage() {
                   />
                   {/* Title */}
                   <h3 style={{ margin: "24px 0 0", fontSize: 30, lineHeight: 1.15, letterSpacing: "-0.02em", fontWeight: 700, color: showDocsWarning ? "#b91c1c" : "#0f172a" }}>
-                    {showDocsWarning ? "No documents uploaded" : aiComplete ? "Done. Request prepared." : (aiStep >= 0 ? aiWorkflow[aiStep].title : "Starting…")}
+                    {showDocsWarning
+                      ? (noDocsUploaded ? "No documents uploaded" : "Document mismatch detected")
+                      : aiComplete ? "Done. Request prepared." : (aiStep >= 0 ? aiWorkflow[aiStep].title : "Starting…")}
                   </h3>
                   {/* Subtitle */}
                   <p style={{ margin: "14px auto 0", maxWidth: 430, fontSize: 14, lineHeight: 1.9, color: showDocsWarning ? "#dc2626" : "#64748b" }}>
-                    {showDocsWarning ? "Your request can still be submitted, but our medical team will need documents from you before proceeding." : aiComplete ? "All checks completed. Submitting your request…" : (aiStep >= 0 ? aiWorkflow[aiStep].subtitle : "")}
+                    {showDocsWarning
+                      ? (noDocsUploaded
+                          ? "Your request can still be submitted, but our medical team will need documents from you before proceeding."
+                          : "One or more uploaded files don't look like the document type they were labeled as. Go back and check the flagged files before submitting.")
+                      : aiComplete ? "All checks completed. Submitting your request…" : (aiStep >= 0 ? aiWorkflow[aiStep].subtitle : "")}
                   </p>
                   {/* Run pill */}
                   <div style={{
@@ -723,7 +741,7 @@ export default function BookPage() {
                     ) : (
                       <div style={{ width: 14, height: 14, borderRadius: "50%", border: "2px solid #cbd5e1", borderTopColor: "#111827", animation: "spin 0.8s linear infinite" }} />
                     )}
-                    <span>{aiComplete ? "All checks completed" : showDocsWarning ? "Missing documents" : "Running task"}</span>
+                    <span>{aiComplete ? "All checks completed" : showDocsWarning ? (noDocsUploaded ? "Missing documents" : "Document mismatch") : "Running task"}</span>
                     {!aiComplete && !showDocsWarning && (
                       <span style={{ display: "inline-flex", alignItems: "center", gap: 4 }}>
                         <span className="ai-dot" style={{ width: 6, height: 6, borderRadius: 999, background: "#94a3b8", display: "block" }} />
@@ -758,7 +776,7 @@ export default function BookPage() {
                 {aiWorkflow.map((wf, idx) => {
                   const done = aiComplete || idx < aiStep;
                   const active = !aiComplete && idx === aiStep;
-                  const warn = idx === DOCS_STEP_INDEX && noDocsUploaded && (done || active);
+                  const warn = idx === DOCS_STEP_INDEX && docsIssue && (done || active);
                   return (
                     <div key={idx} className={active && !warn ? "ai-animate-breathe" : ""}
                       style={{
@@ -784,11 +802,15 @@ export default function BookPage() {
                             background: warn ? "#fee2e2" : done ? "#d1fae5" : active ? "#111827" : "#f1f5f9",
                             color: warn ? "#b91c1c" : done ? "#047857" : active ? "#fff" : "#64748b",
                           }}>
-                            {warn ? "Missing" : done ? "Done" : active ? "Loading" : "Waiting"}
+                            {warn ? (noDocsUploaded ? "Missing" : "Mismatch") : done ? "Done" : active ? "Loading" : "Waiting"}
                           </span>
                         </div>
                         <p style={{ marginTop: 4, fontSize: 12, lineHeight: 1.6, color: warn ? "#dc2626" : "#64748b" }}>
-                          {warn ? "No documents were uploaded for this request." : wf.subtitle}
+                          {warn
+                            ? (noDocsUploaded
+                                ? "No documents were uploaded for this request."
+                                : "One or more uploaded documents don't match their labeled type.")
+                            : wf.subtitle}
                         </p>
                       </div>
                     </div>
