@@ -1,14 +1,22 @@
-// Real, working video call rooms via Jitsi Meet's free public server — no API
-// key, no account, no setup. The room exists the moment anyone opens the URL.
-export function createConsultationRoomUrl(bookingId: string, patientName: string): string {
-  const safeName = patientName.replace(/[^a-zA-Z0-9]/g, "").slice(0, 24) || "Patient";
-  const safeBookingId = bookingId.replace(/[^a-zA-Z0-9]/g, "").slice(-8);
-  const randomSuffix = Math.random().toString(36).slice(2, 10);
-  return `https://meet.jit.si/HealthBridge-${safeName}-${safeBookingId}-${randomSuffix}`;
+// Real, working video call rooms via Daily.co — created server-side
+// (api/create-video-room.js) so the API key never reaches the browser.
+export async function createConsultationRoomUrl(bookingId: string, patientName: string): Promise<string | null> {
+  try {
+    const res = await fetch("/api/create-video-room", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ bookingId, patientName }),
+    });
+    if (!res.ok) return null;
+    const data = await res.json();
+    return typeof data.url === "string" ? data.url : null;
+  } catch {
+    return null;
+  }
 }
 
-// Only meet.jit.si links are real, generated rooms — anything else (old
-// mock google.com links, undefined) should be replaced with a fresh one.
+// Only a real Daily.co room counts — anything else (old fake google.com/jit.si
+// links, undefined) should be replaced with a freshly created one.
 export function isRealConsultationRoom(link: string | undefined): boolean {
-  return !!link && link.startsWith("https://meet.jit.si/");
+  return !!link && link.includes(".daily.co/");
 }

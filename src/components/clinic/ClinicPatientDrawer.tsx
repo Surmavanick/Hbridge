@@ -11,7 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import {
   Mail, Phone, MapPin, CalendarDays, Banknote, StickyNote,
   AlertTriangle, CheckCircle2, XCircle, HelpCircle, Video, Copy, Stethoscope,
-  CalendarClock, FileText,
+  CalendarClock, FileText, Loader2,
 } from "lucide-react";
 import { toast } from "sonner";
 import emailjs from "@emailjs/browser";
@@ -44,6 +44,7 @@ export function ClinicPatientDrawer({ booking, onClose }: ClinicPatientDrawerPro
   const [selectedDoctorId, setSelectedDoctorId] = useState<string>("");
   const [selectedDate, setSelectedDate] = useState<string>("");
   const [selectedTime, setSelectedTime] = useState<string>("");
+  const [isScheduling, setIsScheduling] = useState(false);
   const [showDecline, setShowDecline] = useState(false);
   const [declineReason, setDeclineReason] = useState("");
   const [showMoreInfo, setShowMoreInfo] = useState(false);
@@ -128,11 +129,22 @@ export function ClinicPatientDrawer({ booking, onClose }: ClinicPatientDrawerPro
       return;
     }
     const scheduledAt = `${activeDate}T${selectedTime}:00`;
+
     // Reuse the existing room on reschedule (same link the patient already has);
     // only mint a fresh one the first time, or to replace an old fake mock link.
-    const consultationLink = isRealConsultationRoom(booking!.consultationLink)
-      ? booking!.consultationLink!
-      : createConsultationRoomUrl(booking!.id, booking!.patientName);
+    setIsScheduling(true);
+    let consultationLink: string;
+    if (isRealConsultationRoom(booking!.consultationLink)) {
+      consultationLink = booking!.consultationLink!;
+    } else {
+      const created = await createConsultationRoomUrl(booking!.id, booking!.patientName);
+      if (!created) {
+        setIsScheduling(false);
+        toast.error("Could not create the video room — please try again.");
+        return;
+      }
+      consultationLink = created;
+    }
 
     // Master Schedule (partner/admin) reads from `sessions`, not consultationScheduledAt —
     // keep them in sync so a clinic-confirmed consultation actually shows up there.
@@ -185,6 +197,7 @@ export function ClinicPatientDrawer({ booking, onClose }: ClinicPatientDrawerPro
     } else {
       toast.success(alreadyScheduled ? "Rescheduled — link sent to patient." : "Consultation scheduled! Link sent to patient.");
     }
+    setIsScheduling(false);
     resetForms();
   }
 
@@ -446,9 +459,15 @@ export function ClinicPatientDrawer({ booking, onClose }: ClinicPatientDrawerPro
               </div>
             )}
 
-            <Button className="w-full rounded-xl bg-blue-500 hover:bg-blue-600" onClick={handleConfirmSchedule} disabled={!selectedTime}>
-              {alreadyScheduled ? <CalendarClock className="h-4 w-4 mr-1.5" /> : <CheckCircle2 className="h-4 w-4 mr-1.5" />}
-              {alreadyScheduled ? "Reschedule Consultation" : "Confirm & Schedule"}
+            <Button className="w-full rounded-xl bg-blue-500 hover:bg-blue-600" onClick={handleConfirmSchedule} disabled={!selectedTime || isScheduling}>
+              {isScheduling ? (
+                <Loader2 className="h-4 w-4 mr-1.5 animate-spin" />
+              ) : alreadyScheduled ? (
+                <CalendarClock className="h-4 w-4 mr-1.5" />
+              ) : (
+                <CheckCircle2 className="h-4 w-4 mr-1.5" />
+              )}
+              {isScheduling ? "Creating video room…" : alreadyScheduled ? "Reschedule Consultation" : "Confirm & Schedule"}
             </Button>
           </div>
 
