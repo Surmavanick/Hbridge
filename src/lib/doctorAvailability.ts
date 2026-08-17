@@ -4,10 +4,19 @@ import type { BookingRequest, Doctor } from "@/data/mockData";
 export const CONSULTATION_SLOTS = ["09:00", "10:00", "11:00", "14:00", "15:00", "16:00", "17:00"];
 const DEFAULT_DURATION_MIN = 60;
 
-// Session titles used to tell a clinic-confirmed consultation apart from an
-// AI-proposed one still awaiting review, wherever sessions are rendered.
-export const CONSULTATION_SESSION_TITLE = "Consultation";
-export const PROPOSED_CONSULTATION_SESSION_TITLE = "Consultation (Proposed)";
+// Consultation session titles always read "Consultation with Dr. X" — same
+// format whether it's an AI proposal or a clinic-confirmed slot. Matched by
+// prefix so confirming (possibly with a different doctor) replaces the
+// existing one instead of leaving a duplicate.
+export const CONSULTATION_SESSION_PREFIX = "Consultation with";
+
+export function consultationSessionTitle(doctorName: string): string {
+  return `${CONSULTATION_SESSION_PREFIX} ${doctorName}`;
+}
+
+export function isConsultationSession(title: string): boolean {
+  return title.startsWith(CONSULTATION_SESSION_PREFIX);
+}
 
 export interface BusySlot {
   start: Date;

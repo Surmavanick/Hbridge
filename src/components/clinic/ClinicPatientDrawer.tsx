@@ -20,7 +20,7 @@ import { cn } from "@/lib/utils";
 import {
   CONSULTATION_SLOTS, getDoctorBusySlots, getFreeTimesForDate,
   hasFreeSlotInRange, findNextFreeSlot, whoIsBusy, sortDoctorsBySpecialtyMatch,
-  CONSULTATION_SESSION_TITLE, PROPOSED_CONSULTATION_SESSION_TITLE,
+  consultationSessionTitle, isConsultationSession,
 } from "@/lib/doctorAvailability";
 import { createConsultationRoomUrl, isRealConsultationRoom } from "@/lib/videoCall";
 
@@ -169,14 +169,12 @@ export function ClinicPatientDrawer({ booking, onClose }: ClinicPatientDrawerPro
       date: activeDate,
       time: selectedTime,
       durationMin: 60,
-      title: CONSULTATION_SESSION_TITLE,
+      title: consultationSessionTitle(doctor.name),
       doctorId: doctor.id,
       hospitalId: booking!.hospitalId!,
       location: hospital?.address,
     };
-    const otherSessions = (booking!.sessions ?? []).filter(
-      (s) => s.title !== CONSULTATION_SESSION_TITLE && s.title !== PROPOSED_CONSULTATION_SESSION_TITLE
-    );
+    const otherSessions = (booking!.sessions ?? []).filter((s) => !isConsultationSession(s.title));
 
     updateBooking(booking!.id, {
       doctorId: doctor.id,

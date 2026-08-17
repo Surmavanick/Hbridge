@@ -11,10 +11,9 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Calendar as CalendarComponent } from "@/components/ui/calendar";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Calendar, Clock, MapPin, Stethoscope, FileText, ArrowRight, MessageSquare, Download, Plus, Trash2, Search, Check, Building2, X as XIcon, ChevronRight, Video, Copy, AlertTriangle, Sparkles } from "lucide-react";
+import { Calendar, Clock, MapPin, Stethoscope, FileText, ArrowRight, MessageSquare, Download, Plus, Trash2, Search, Check, Building2, X as XIcon, ChevronRight, Video, Copy, AlertTriangle } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
-import { CONSULTATION_SESSION_TITLE, PROPOSED_CONSULTATION_SESSION_TITLE } from "@/lib/doctorAvailability";
 
 const ALL_STATUSES: BookingStatus[] = [
   "Lead - Step 1: Awaiting Email Verification",
@@ -412,33 +411,18 @@ export function PatientDrawer({ booking, onClose }: PatientDrawerProps) {
                   <div className="relative border-l-2 border-slate-200 ml-4 pl-6 pb-2 space-y-6">
                     {[...booking.sessions].sort((a, b) => a.date.localeCompare(b.date)).map((session, idx) => {
                       const isPast = new Date(session.date) < new Date();
-                      const isProposed = session.title === PROPOSED_CONSULTATION_SESSION_TITLE;
                       return (
                         <div key={idx} className="relative">
-                          <div className={`absolute -left-[31px] w-3.5 h-3.5 rounded-full border-2 border-white shadow-sm top-1 ${
-                            isProposed ? "bg-violet-400" : isPast ? "bg-slate-300" : "bg-primary"
-                          }`} />
-                          <div className={`bg-white border p-4 rounded-xl shadow-sm ${
-                            isProposed
-                              ? "border-violet-200 border-dashed bg-violet-50/40"
-                              : isPast ? "border-slate-200 opacity-60" : "border-primary/20 bg-primary/[0.02]"
-                          }`}>
+                          <div className={`absolute -left-[31px] w-3.5 h-3.5 rounded-full border-2 border-white ${isPast ? "bg-slate-300" : "bg-primary"} shadow-sm top-1`} />
+                          <div className={`bg-white border p-4 rounded-xl shadow-sm ${isPast ? "border-slate-200 opacity-60" : "border-primary/20 bg-primary/[0.02]"}`}>
                             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-2">
-                              <h5 className="font-bold text-slate-800 text-sm flex items-center gap-1.5">
-                                {isProposed && <Sparkles className="h-3.5 w-3.5 text-violet-500 shrink-0" />}
-                                {isProposed ? CONSULTATION_SESSION_TITLE : session.title}
-                              </h5>
+                              <h5 className="font-bold text-slate-800 text-sm">{session.title}</h5>
                               <div className="flex items-center gap-1.5 text-xs font-medium text-slate-500 bg-white px-2 py-1 rounded-md border border-slate-100 w-fit">
                                 <Calendar className="h-3 w-3" /> {format(new Date(session.date), "MMM d")}
                                 <span className="mx-1">•</span>
                                 <Clock className="h-3 w-3" /> {session.time} ({session.durationMin}m)
                               </div>
                             </div>
-                            {isProposed && (
-                              <p className="text-[11px] font-semibold text-violet-600 mb-1.5">
-                                AI-proposed — awaiting clinic confirmation
-                              </p>
-                            )}
                             {session.location && (
                               <p className="text-xs text-slate-500 flex items-center gap-1.5 mt-2">
                                 <MapPin className="h-3 w-3 text-slate-400" /> {session.location}
@@ -628,25 +612,19 @@ export function PatientDrawer({ booking, onClose }: PatientDrawerProps) {
                 .sort((a, b) => (a.s.date + a.s.time).localeCompare(b.s.date + b.s.time))
                 .map(({ s, originalIndex }) => {
                   const isPast = new Date(`${s.date}T${s.time}`) < new Date();
-                  const isProposed = s.title === PROPOSED_CONSULTATION_SESSION_TITLE;
                   return (
                     <div key={originalIndex} className={cn(
                       "flex items-center gap-3 p-3 rounded-xl border transition-colors",
-                      isProposed
-                        ? "border-violet-200 border-dashed bg-violet-50/40"
-                        : isPast ? "border-slate-200 bg-slate-50/60 opacity-70" : "border-primary/20 bg-primary/[0.02]"
+                      isPast ? "border-slate-200 bg-slate-50/60 opacity-70" : "border-primary/20 bg-primary/[0.02]"
                     )}>
                       <div className={cn(
                         "w-9 h-9 rounded-lg flex items-center justify-center shrink-0",
-                        isProposed ? "bg-violet-100 text-violet-500" : isPast ? "bg-slate-100 text-slate-400" : "bg-primary/10 text-primary"
+                        isPast ? "bg-slate-100 text-slate-400" : "bg-primary/10 text-primary"
                       )}>
-                        {isProposed ? <Sparkles className="h-4 w-4" /> : <Calendar className="h-4 w-4" />}
+                        <Calendar className="h-4 w-4" />
                       </div>
                       <div className="min-w-0 flex-1">
-                        <p className="text-sm font-semibold text-slate-800 truncate flex items-center gap-1.5">
-                          {isProposed ? CONSULTATION_SESSION_TITLE : s.title}
-                          {isProposed && <span className="text-[10px] font-bold text-violet-600 bg-violet-100 px-1.5 py-0.5 rounded-full shrink-0">AI PROPOSED</span>}
-                        </p>
+                        <p className="text-sm font-semibold text-slate-800 truncate">{s.title}</p>
                         <p className="text-xs text-slate-500 flex flex-wrap items-center gap-x-2.5 gap-y-0.5 mt-0.5">
                           <span className="flex items-center gap-1"><Calendar className="h-3 w-3" /> {format(new Date(s.date), "EEE, MMM d")}</span>
                           <span className="flex items-center gap-1"><Clock className="h-3 w-3" /> {s.time} · {s.durationMin}m</span>
