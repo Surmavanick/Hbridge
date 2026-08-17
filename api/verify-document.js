@@ -37,8 +37,8 @@ export default async function handler(req, res) {
     return;
   }
 
-  if (text.length < 30) {
-    // No extractable text layer (scanned image PDF) — nothing to check.
+  if (text.length === 0) {
+    // No extractable text layer at all (scanned image PDF) — nothing to check.
     res.status(200).json({ valid: true, skipped: true, reason: "Document has no extractable text (likely a scan); accepted without automated review." });
     return;
   }
@@ -51,7 +51,7 @@ Extracted text from the PDF:
 ${truncated}
 """
 
-Decide whether this document's actual content is genuinely consistent with being a "${documentType}". Look for relevant medical terminology, structure, or content matching that document type. Reject documents that are clearly unrelated (e.g. an invoice, a random letter, a blank/empty page, or an obviously different document type).
+Decide whether this document's actual content is genuinely consistent with being a "${documentType}". Look for relevant medical terminology, structure, or content matching that document type. Reject documents that are clearly unrelated, placeholder/filler text, test/dummy content, near-empty content, or an obviously different document type (e.g. an invoice, a random letter, a "Lorem ipsum" or "Dummy PDF" placeholder file).
 
 Respond with ONLY a JSON object: {"valid": true or false, "reason": "<one short sentence explaining why>"}`;
 
