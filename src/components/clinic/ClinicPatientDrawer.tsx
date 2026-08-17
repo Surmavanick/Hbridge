@@ -85,8 +85,8 @@ export function ClinicPatientDrawer({ booking, onClose }: ClinicPatientDrawerPro
   );
 
   const today = startOfDay(new Date());
-  const dateOptions = useMemo(
-    () => Array.from({ length: 10 }, (_, i) => {
+  const dateOptions = useMemo(() => {
+    const days = Array.from({ length: 10 }, (_, i) => {
       const d = addDays(today, i);
       const dateStr = format(d, "yyyy-MM-dd");
       return {
@@ -94,10 +94,20 @@ export function ClinicPatientDrawer({ booking, onClose }: ClinicPatientDrawerPro
         label: format(d, "EEE, MMM d"),
         freeCount: getFreeTimesForDate(busySlots, dateStr).length,
       };
-    }),
+    });
+    // A pre-selected date (e.g. AI's proposal) can fall outside this 10-day
+    // strip — pin it in front so it's always visible and selectable, not just
+    // held invisibly in state.
+    if (selectedDate && !days.some((d) => d.value === selectedDate)) {
+      days.unshift({
+        value: selectedDate,
+        label: format(new Date(selectedDate), "EEE, MMM d"),
+        freeCount: getFreeTimesForDate(busySlots, selectedDate).length,
+      });
+    }
+    return days;
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [busySlots]
-  );
+  }, [busySlots, selectedDate]);
 
   const activeDate = selectedDate || dateOptions.find((d) => d.freeCount > 0)?.value || dateOptions[0]?.value || "";
   const freeTimesToday = getFreeTimesForDate(busySlots, activeDate);
