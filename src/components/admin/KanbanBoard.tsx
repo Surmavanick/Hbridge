@@ -4,9 +4,16 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import {
   MailWarning, FileText, Hourglass, Plane, CircleDot,
-  AlertTriangle, MoreHorizontal, UserPlus,
+  AlertTriangle, MoreHorizontal, UserPlus, Trash2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem,
+} from "@/components/ui/dropdown-menu";
+import {
+  AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogTitle,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogAction, AlertDialogCancel,
+} from "@/components/ui/alert-dialog";
 import { format, formatDistanceToNow } from "date-fns";
 import { cn } from "@/lib/utils";
 
@@ -89,11 +96,12 @@ interface KanbanBoardProps {
   onOpenPatient: (booking: BookingRequest) => void;
   onStatusChange: (id: string, status: BookingStatus) => void;
   onAccept?: (id: string) => void;
+  onDelete?: (id: string) => void;
 }
 
 // ─── Board ────────────────────────────────────────────────────────────
 
-export function KanbanBoard({ bookings, onOpenPatient, onStatusChange, onAccept }: KanbanBoardProps) {
+export function KanbanBoard({ bookings, onOpenPatient, onStatusChange, onAccept, onDelete }: KanbanBoardProps) {
   const [draggingId, setDraggingId] = useState<string | null>(null);
   const [overColumnId, setOverColumnId] = useState<string | null>(null);
   const dragBookingRef = useRef<BookingRequest | null>(null);
@@ -172,6 +180,7 @@ export function KanbanBoard({ bookings, onOpenPatient, onStatusChange, onAccept 
                     compact
                     isUnassigned={!booking.assignedPartnerId}
                     onAccept={onAccept ? () => onAccept(booking.id) : undefined}
+                    onDelete={onDelete}
                   />
                 ))}
 
@@ -247,6 +256,7 @@ export function KanbanBoard({ bookings, onOpenPatient, onStatusChange, onAccept 
                     draggable
                     isUnassigned={!booking.assignedPartnerId}
                     onAccept={onAccept ? () => onAccept(booking.id) : undefined}
+                    onDelete={onDelete}
                   />
                 ))}
 
@@ -283,6 +293,7 @@ interface KanbanCardProps {
   compact?: boolean;
   isUnassigned?: boolean;
   onAccept?: () => void;
+  onDelete?: (id: string) => void;
 }
 
 function KanbanCard({
@@ -295,13 +306,16 @@ function KanbanCard({
   compact = false,
   isUnassigned = false,
   onAccept,
+  onDelete,
 }: KanbanCardProps) {
   const proc = procedures.find((p) => p.id === booking.procedureId);
   const isWarning =
     booking.status.includes("More Information") ||
     (booking.notes && booking.notes.toLowerCase().includes("missing"));
+  const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
 
   return (
+    <>
     <Card
       draggable={draggable && !isUnassigned}
       onDragStart={draggable && !isUnassigned ? (e) => onDragStart(e, booking) : undefined}
@@ -346,14 +360,26 @@ function KanbanCard({
             </div>
           </div>
           {!isUnassigned && (
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-5 w-5 text-slate-400 hover:text-slate-600 shrink-0"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <MoreHorizontal className="h-3 w-3" />
-            </Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-5 w-5 text-slate-400 hover:text-slate-600 shrink-0"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <MoreHorizontal className="h-3 w-3" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
+                <DropdownMenuItem
+                  className="text-red-600 focus:text-red-600 focus:bg-red-50"
+                  onSelect={(e) => { e.preventDefault(); setConfirmDeleteOpen(true); }}
+                >
+                  <Trash2 className="h-3.5 w-3.5 mr-2" /> Delete
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           )}
         </div>
 
@@ -387,5 +413,26 @@ function KanbanCard({
         </div>
       </div>
     </Card>
+
+    <AlertDialog open={confirmDeleteOpen} onOpenChange={setConfirmDeleteOpen}>
+      <AlertDialogContent onClick={(e) => e.stopPropagation()}>
+        <AlertDialogHeader>
+          <AlertDialogTitle>Delete {booking.patientName}?</AlertDialogTitle>
+          <AlertDialogDescription>
+            This permanently removes this patient record — including documents, sessions, and history — from the database. This cannot be undone.
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel>Cancel</AlertDialogCancel>
+          <AlertDialogAction
+            className="bg-red-600 hover:bg-red-700 text-white"
+            onClick={() => onDelete?.(booking.id)}
+          >
+            Delete
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+    </>
   );
 }

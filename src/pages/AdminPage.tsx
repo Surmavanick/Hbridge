@@ -139,7 +139,7 @@ function MobileScheduleRow({ booking, dateStr, onOpenPatient }: { booking: Booki
    MAIN COMPONENT
    ═══════════════════════════════════════════ */
 export default function AdminPage() {
-  const { bookings, updateStatus, updateBooking, assignBooking, addBooking } = useBookings();
+  const { bookings, updateStatus, updateBooking, assignBooking, addBooking, deleteBooking } = useBookings();
   const { user, userReferralCode } = useAuth();
   const [currentDate, setCurrentDate] = useState<Date>(() => new Date());
   const [searchQuery, setSearchQuery] = useState("");
@@ -604,6 +604,7 @@ export default function AdminPage() {
                   onOpenPatient={(b) => setSelectedPatientId(b.id)}
                   onStatusChange={handleStatusChange}
                   onAccept={(id) => user && assignBooking(id, user.id)}
+                  onDelete={(id) => { deleteBooking(id); toast.success("Patient record deleted."); }}
                 />
              </div>
           </TabsContent>
